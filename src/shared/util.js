@@ -57,6 +57,7 @@ export function isObject (obj: mixed): boolean %checks {
 const _toString = Object.prototype.toString
 
 // 字符串的slice方法，左闭右开，截取空格后面的值
+// 数组的slice方法，左闭右开，不改变原数组，返回截取出来的数组
 // 获取参数的toString之后的原始类型
 export function toRawType (value: any): string {
   return _toString.call(value).slice(8, -1)
@@ -125,6 +126,12 @@ export function toNumber (val: string): number | string {
  * is in that map.
  * flow maybe types 判断类型，如value : ?string，意味着value可以是string，或者是underfined，或者是null
  * flow 可选参数 如这里的expectsLowerCase ?: boolean 表示这个参数可以不传，或者undefined，或者匹配的类型，但是不接受null
+ * 这里: (key: string) => true | void 表示返回值也是一个函数，这个函数有一个string类型的参数，返回一个ture或者void
+ * Object.create()方法接受两个参数，第一个是原型，第二个是属性描述符的javascript对象，可以利用Obejct.create(null)创造一个空对象，且没有toString()、hasOwnProperty
+等继承于Object.prototype上的方法
+ * 字符串的split函数，不会改变原字符串，返回一个数组，根据split()里的参数进行分割，如split()不传入参数，则生成一个长度为0的数组，数组第一项为字符串，如果传入split('')，则将字符串每个字母都分开
+ * 这里利用了闭包，返回的函数中，map对象不会消失
+ * 返回的函数，用来判断传入的参数是不是存储在map里，如果是则返回true，不是则返回undefined
  */
 export function makeMap (
   str: string,
@@ -142,16 +149,22 @@ export function makeMap (
 
 /**
  * Check if a tag is a built-in tag.
+ * 判断参数是不是内置标签，包括slot和component
  */
 export const isBuiltInTag = makeMap('slot,component', true)
 
 /**
  * Check if a attribute is a reserved attribute.
+ * 判断参数是不是保留参数，包括key,ref,slot,slot-scope,is
  */
 export const isReservedAttribute = makeMap('key,ref,slot,slot-scope,is')
 
 /**
  * Remove an item from an array
+ * 将第二个参数（item)从第一个参数（arr数组）中移除
+ * 数组和字符串都有indexOf方法，数组的indexOf能输出参数位于数组的索引，字符串的indexOf返回参数字符在字符串首次出现的位置，对大小写敏感，如果没出现返回-1，也可以接受第二个参数
+ * 表示开始搜索的位置，取值可以从0到string.length-1
+ * Array.prototype.splice方法，用于添加|删除数组，第一个参数是索引值，第二个参数是删除的个数，第三个、第四个、第五个等等参数是新加入的元素，直接改变原数组，返回被删除的项目
  */
 export function remove (arr: Array<any>, item: any): Array<any> | void {
   if (arr.length) {
@@ -164,6 +177,9 @@ export function remove (arr: Array<any>, item: any): Array<any> | void {
 
 /**
  * Check whether the object has the property.
+ * Object.prototype.hasOwnProperty可以检查参数是否是对象自身属性（不包括继承属性）
+ * 这个地方有疑问，数组其实也继承了hasOwnProperty方法，为什么这个地方又重新封装了一次，利用call来执行这个方法。
+ * 猜测的是，javascript没有将hasOwnProperty作为关键词，可能对象可以自己定义一个属性叫做hasOwnProperty，利用原型上的方法则可以避免这个问题
  */
 const hasOwnProperty = Object.prototype.hasOwnProperty
 export function hasOwn (obj: Object | Array<*>, key: string): boolean {
