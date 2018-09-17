@@ -188,6 +188,8 @@ export function hasOwn (obj: Object | Array<*>, key: string): boolean {
 
 /**
  * Create a cached version of a pure function.
+ * 这个地方的<F: Function>是泛型，generic type。fn是形参，它的类型是F也就Function，返回值也是F。
+ * 这个函数是一个工具，来缓存函数。
  */
 export function cached<F: Function> (fn: F): F {
   const cache = Object.create(null)
@@ -199,6 +201,8 @@ export function cached<F: Function> (fn: F): F {
 
 /**
  * Camelize a hyphen-delimited string.
+ * 驼峰化分隔符连接的字符串函数。
+ * 正则中\w表示数字字母下划线。
  */
 const camelizeRE = /-(\w)/g
 export const camelize = cached((str: string): string => {
