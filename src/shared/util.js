@@ -1,11 +1,11 @@
 /* @flow */
 
-// 冻结一个空对象，不能删除、添加、改变属性，不能改变已有属性的可枚举性，可配置性，可写性
+// 冻结一个空对象，不能删除、添加、改变属性，不能改变已有属性的可枚举性，可配置性，可写性。
 export const emptyObject = Object.freeze({})
 
 // these helpers produces better vm code in JS engines due to their
 // explicitness and function inlining
-// %check是flow里的谓词函数 isUndef判断参数是不是underfined或者null,如果是就返回true
+// %check是flow里的谓词函数 isUndef判断参数是不是underfined或者null,如果是就返回true。
 export function isUndef (v: any): boolean %checks {
   return v === undefined || v === null
 }
@@ -27,7 +27,7 @@ export function isFalse (v: any): boolean %checks {
 
 /**
  * Check if value is primitive 原始
- * 判断参数是值类型（字符串，数字，布尔值，还有一个是symbol，符号），但不是underfined或者null
+ * 判断参数是值类型（字符串，数字，布尔值，还有一个是symbol，符号），但不是underfined或者null。
  */
 export function isPrimitive (value: any): boolean %checks {
   return (
@@ -42,9 +42,9 @@ export function isPrimitive (value: any): boolean %checks {
 /**
  * Quick object check - this is primarily 主要 used to tell
  * Objects from primitive 原始 values when we know the value
- * is a JSON-compliant 兼容 type.
- * mixed是flow中的混合类型，当使用混合类型的时候，必须先判断typeof该类型的值
- * 快速判断参数是不是object类型，且不是null
+ * is a JSON-compliant 兼容 type
+ * mixed是flow中的混合类型，当使用混合类型的时候，必须先判断typeof该类型的值。
+ * 快速判断参数是不是object类型，且不是null。
  */
 export function isObject (obj: mixed): boolean %checks {
   return obj !== null && typeof obj === 'object'
@@ -52,13 +52,13 @@ export function isObject (obj: mixed): boolean %checks {
 
 /**
  * Get the raw type string of a value e.g. [object Object]
- * 提取Object原型上的toString方法
+ * 提取Object原型上的toString方法。
  */
 const _toString = Object.prototype.toString
 
-// 字符串的slice方法，左闭右开，截取空格后面的值
-// 数组的slice方法，左闭右开，不改变原数组，返回截取出来的数组
-// 获取参数的toString之后的原始类型
+// 字符串的slice方法，左闭右开，截取空格后面的值。
+// 数组的slice方法，左闭右开，不改变原数组，返回截取出来的数组。
+// 获取参数的toString之后的原始类型。
 export function toRawType (value: any): string {
   return _toString.call(value).slice(8, -1)
 }
@@ -66,7 +66,7 @@ export function toRawType (value: any): string {
 /**
  * Strict object type check. Only returns true
  * for plain JavaScript objects.
- * 严格根据toString方法判断参数是javascript里面真正的对象（而不是function等等）
+ * 严格根据toString方法判断参数是javascript里面真正的对象（而不是function等等）。
  */
 export function isPlainObject (obj: any): boolean {
   return _toString.call(obj) === '[object Object]'
@@ -79,13 +79,13 @@ export function isRegExp (v: any): boolean {
 
 /**
  * Check if val is a valid array index.
- * String构造函数，传入对象为Object的时候，输出[object Object]，相当于调用了Object.prototype.toString()方法
- * String构造函数，传入对象为Function的时候，将整个函数转换为字符串
- * String构造函数，传入对象为Array的时候，将数组转换为字符串
- * parseFloat将里面的String(val)转换成浮点数
- * Math.floor取地板，Math.ceil取天花板，Math.round取四舍五入
- * isFinite判断是不是数字，如果是NAN或者正无穷负无穷，就返回false
- * 判断参数是有效的数组索引
+ * String构造函数，传入对象为Object的时候，输出[object Object]，相当于调用了Object.prototype.toString()方法。
+ * String构造函数，传入对象为Function的时候，将整个函数转换为字符串。
+ * String构造函数，传入对象为Array的时候，将数组转换为字符串。
+ * parseFloat将里面的String(val)转换成浮点数。
+ * Math.floor取地板，Math.ceil取天花板，Math.round取四舍五入。
+ * isFinite判断是不是数字，如果是NAN或者正无穷负无穷，就返回false。
+ * 判断参数是有效的数组索引。
  */
 export function isValidArrayIndex (val: any): boolean {
   const n = parseFloat(String(val))
@@ -94,14 +94,14 @@ export function isValidArrayIndex (val: any): boolean {
 
 /**
  * Convert a value to a string that is actually rendered.
- * 将参数转换为一个实际呈现的字符串
- * 判断参数是否为空，如果为空则返回''
- * 如果不为空，用嵌套三元继续判断，如果是对象，则使用JSON.stringify去转换
- * JSON.stringify方法有三个参数，第一个参数是传入对象，第二个参数是replacer，第三个参数是space(表示缩进空格，可以取从0到10)
- * 第二个参数replacer可以是数组，也可以是函数，相当于一个白名单过滤，如果是数组，那存在于数组中的key值才会被JSON.stringify处理
- * 如果replacer是函数，会遍历传入的所有对象（如果是对象，则只有一个，如果是数组，则遍历数组里的所有对象），有两个参数，key和value，必须要有return值
- * JSON.stringify不能处理值为Function或者值为undefined
- * 如果为空，则直接用String构造函数去转换
+ * 将参数转换为一个实际呈现的字符串。
+ * 判断参数是否为空，如果为空则返回''。
+ * 如果不为空，用嵌套三元继续判断，如果是对象，则使用JSON.stringify去转换。
+ * JSON.stringify方法有三个参数，第一个参数是传入对象，第二个参数是replacer，第三个参数是space(表示缩进空格，可以取从0到10)。
+ * 第二个参数replacer可以是数组，也可以是函数，相当于一个白名单过滤，如果是数组，那存在于数组中的key值才会被JSON.stringify处理。
+ * 如果replacer是函数，会遍历传入的所有对象（如果是对象，则只有一个，如果是数组，则遍历数组里的所有对象），有两个参数，key和value，必须要有return值。
+ * JSON.stringify不能处理值为Function或者值为undefined。
+ * 如果为空，则直接用String构造函数去转换。
  */
 export function toString (val: any): string {
   return val == null
@@ -113,7 +113,7 @@ export function toString (val: any): string {
 
 /**
  * Convert a input value to a number for persistence.
- * 将字符串参数转换为number类型，如果成功则返回转换后的number，不成功（isNaN）则返回原始字符串
+ * 将字符串参数转换为number类型，如果成功则返回转换后的number，不成功（isNaN）则返回原始字符串。
  * If the conversion fails, return original string.
  */
 export function toNumber (val: string): number | string {
@@ -124,14 +124,14 @@ export function toNumber (val: string): number | string {
 /**
  * Make a map and return a function for checking if a key
  * is in that map.
- * flow maybe types 判断类型，如value : ?string，意味着value可以是string，或者是underfined，或者是null
- * flow 可选参数 如这里的expectsLowerCase ?: boolean 表示这个参数可以不传，或者undefined，或者匹配的类型，但是不接受null
- * 这里: (key: string) => true | void 表示返回值也是一个函数，这个函数有一个string类型的参数，返回一个ture或者void
+ * flow maybe types 判断类型，如value : ?string，意味着value可以是string，或者是underfined，或者是null。
+ * flow 可选参数 如这里的expectsLowerCase ?: boolean 表示这个参数可以不传，或者undefined，或者匹配的类型，但是不接受null。
+ * 这里: (key: string) => true | void 表示返回值也是一个函数，这个函数有一个string类型的参数，返回一个ture或者void。
  * Object.create()方法接受两个参数，第一个是原型，第二个是属性描述符的javascript对象，可以利用Obejct.create(null)创造一个空对象，且没有toString()、hasOwnProperty
-等继承于Object.prototype上的方法
- * 字符串的split函数，不会改变原字符串，返回一个数组，根据split()里的参数进行分割，如split()不传入参数，则生成一个长度为0的数组，数组第一项为字符串，如果传入split('')，则将字符串每个字母都分开
- * 这里利用了闭包，返回的函数中，map对象不会消失
- * 返回的函数，用来判断传入的参数是不是存储在map里，如果是则返回true，不是则返回undefined
+等继承于Object.prototype上的方法。
+ * 字符串的split函数，不会改变原字符串，返回一个数组，根据split()里的参数进行分割，如split()不传入参数，则生成一个长度为0的数组，数组第一项为字符串，如果传入split('')，则将字符串每个字母都分开。
+ * 这里利用了闭包，返回的函数中，map对象不会消失。
+ * 返回的函数，用来判断传入的参数是不是存储在map里，如果是则返回true，不是则返回undefined。
  */
 export function makeMap (
   str: string,
@@ -149,7 +149,7 @@ export function makeMap (
 
 /**
  * Check if a tag is a built-in tag.
- * 判断参数是不是内置标签，包括slot和component
+ * 判断参数是不是内置标签，包括slot和component。
  */
 export const isBuiltInTag = makeMap('slot,component', true)
 
@@ -161,10 +161,10 @@ export const isReservedAttribute = makeMap('key,ref,slot,slot-scope,is')
 
 /**
  * Remove an item from an array
- * 将第二个参数（item)从第一个参数（arr数组）中移除
- * 数组和字符串都有indexOf方法，数组的indexOf能输出参数位于数组的索引，字符串的indexOf返回参数字符在字符串首次出现的位置，对大小写敏感，如果没出现返回-1，也可以接受第二个参数
- * 表示开始搜索的位置，取值可以从0到string.length-1
- * Array.prototype.splice方法，用于添加|删除数组，第一个参数是索引值，第二个参数是删除的个数，第三个、第四个、第五个等等参数是新加入的元素，直接改变原数组，返回被删除的项目
+ * 将第二个参数（item)从第一个参数（arr数组）中移除。
+ * 数组和字符串都有indexOf方法，数组的indexOf能输出参数位于数组的索引，字符串的indexOf返回参数字符在字符串首次出现的位置，对大小写敏感，如果没出现返回-1，也可以接受第二个参数。
+ * 表示开始搜索的位置，取值可以从0到string.length-1。
+ * Array.prototype.splice方法，用于添加|删除数组，第一个参数是索引值，第二个参数是删除的个数，第三个、第四个、第五个等等参数是新加入的元素，直接改变原数组，返回被删除的项目。
  */
 export function remove (arr: Array<any>, item: any): Array<any> | void {
   if (arr.length) {
@@ -177,9 +177,9 @@ export function remove (arr: Array<any>, item: any): Array<any> | void {
 
 /**
  * Check whether the object has the property.
- * Object.prototype.hasOwnProperty可以检查参数是否是对象自身属性（不包括继承属性）
+ * Object.prototype.hasOwnProperty可以检查参数是否是对象自身属性（不包括继承属性）。
  * 这个地方有疑问，数组其实也继承了hasOwnProperty方法，为什么这个地方又重新封装了一次，利用call来执行这个方法。
- * 猜测的是，javascript没有将hasOwnProperty作为关键词，可能对象可以自己定义一个属性叫做hasOwnProperty，利用原型上的方法则可以避免这个问题
+ * 猜测的是，javascript没有将hasOwnProperty作为关键词，可能对象可以自己定义一个属性叫做hasOwnProperty，利用原型上的方法则可以避免这个问题。
  */
 const hasOwnProperty = Object.prototype.hasOwnProperty
 export function hasOwn (obj: Object | Array<*>, key: string): boolean {
@@ -203,6 +203,8 @@ export function cached<F: Function> (fn: F): F {
  * Camelize a hyphen-delimited string.
  * 驼峰化分隔符连接的字符串函数。
  * 正则中\w表示数字字母下划线。
+ * String.prototype.replace函数，第一个参数可以是字符串，也可以是个正则，第二个参数可以是字符串，也可以是函数。
+ * 
  */
 const camelizeRE = /-(\w)/g
 export const camelize = cached((str: string): string => {
