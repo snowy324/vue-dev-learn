@@ -149,7 +149,7 @@ export function makeMap (
 
 /**
  * Check if a tag is a built-in tag.
- * 判断参数是不是内置标签，包括slot和component。
+ * 判断参数是不是内置标签，包括Slot和Component。
  */
 export const isBuiltInTag = makeMap('slot,component', true)
 
@@ -189,7 +189,9 @@ export function hasOwn (obj: Object | Array<*>, key: string): boolean {
 /**
  * Create a cached version of a pure function.
  * 这个地方的<F: Function>是泛型，generic type。fn是形参，它的类型是F也就Function，返回值也是F。
- * 这个函数是一个工具，来缓存函数。
+ * 这个函数是一个工具，来缓存函数。利用cahce加快数据的读取速度，加做缓存策略。
+ * 第一次运行的时候，把结果存储到hit中。第二次的时候可以直接返回hit，而不需要再执行这个函数。
+ * || 或运算符，当前面一项为真的时候，直接返回前面一项的结果，第二项不执行。
  */
 export function cached<F: Function> (fn: F): F {
   const cache = Object.create(null)
@@ -204,7 +206,12 @@ export function cached<F: Function> (fn: F): F {
  * 驼峰化分隔符连接的字符串函数。
  * 正则中\w表示数字字母下划线。
  * String.prototype.replace函数，第一个参数可以是字符串，也可以是个正则，第二个参数可以是字符串，也可以是函数。
- * 
+ * replace方法不会改变原字符串。返回一个新的字符串。
+ * replace方法第一个参数为正则，第二个参数为函数时，该函数会被多次调用，每次匹配到都会调用。
+ * replace第二个参数函数，有几个参数：match表示匹配到的子串，之后的p1, p2 ,p3 ... 对应括号匹配的字符串。offest表示子串的偏移量。string表示原字符串。
+ * 即：function (match, p1, p2, p3 ..., offset, string)
+ * 在这个函数中(_, c) => c ? c.toUpperCase() : '', _代表match（匹配字符串), c代表(\w), 即第一个括号里的子串。
+ * 总而言之这个函数将字符串中的-都匹配到，如果后面有数字、字母、下划线，就把-去掉，尝试将其变成大写，如果没有，直接返回空''。
  */
 const camelizeRE = /-(\w)/g
 export const camelize = cached((str: string): string => {
@@ -213,6 +220,8 @@ export const camelize = cached((str: string): string => {
 
 /**
  * Capitalize a string.
+ * 将一个字符串首字母变成大写。
+ * String.prototype.charAt方法，参数值为索引值，返回字符串在该索引值出的字符。如果索引值非法（不在0到string.length）之间，则返回一个空字符串。
  */
 export const capitalize = cached((str: string): string => {
   return str.charAt(0).toUpperCase() + str.slice(1)
@@ -220,6 +229,11 @@ export const capitalize = cached((str: string): string => {
 
 /**
  * Hyphenate a camelCase string.
+ * 正则\B表示非单词边界，\b表示单词边界。
+ * replace函数第二个参数可以是替换字符串，这个字符串可以插入一些特殊变量。
+ * 如：$$表示特殊符号$，$&表示匹配的子串，$`表示匹配子串左边的内容，$'表示匹配子串右边的内容。
+ * 当第一个参数是正则的时候，第二个替换字符串还可以使用$n，n必须是小于100的非负整数，表示第n个括号匹配的子串。
+ * 这个函数就是为了匹配非单词边界的大写字母，将其替换为-和对应的小写字母。
  */
 const hyphenateRE = /\B([A-Z])/g
 export const hyphenate = cached((str: string): string => {
