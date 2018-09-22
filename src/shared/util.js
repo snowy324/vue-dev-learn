@@ -246,6 +246,10 @@ export const hyphenate = cached((str: string): string => {
  * now more performant in most browsers, but removing it would be breaking for
  * code that was able to run in PhantomJS 1.x, so this must be kept for
  * backwards compatibility.
+ * 为了一些不支持bind方法的环境。
+ * 函数的length属性，即这里的boundFn._length属性，指的是函数定义时候的形参个数。
+ * apply和call方法不同的地方在于参数，call方法是将参数依次用逗号隔开，当做多个参数，而apply方法是将所有参数放入一个数组中，作为apply的第二个参数。
+ * 在这里判断boundFn传入的实参个数l, 如果l=0, 直接执行fn.call(ctx), 如果l=1, 执行fn.call(ctx, a), 如果l>1, 执行fn.apply(ctx, arguments)。
  */
 
 /* istanbul ignore next */
@@ -263,16 +267,22 @@ function polyfillBind (fn: Function, ctx: Object): Function {
   return boundFn
 }
 
+// 直接使用bind方法绑定上下文ctx。
+// bind方法是返回一个新的函数，需要进行调用。
+// call和apply是直接执行函数。
 function nativeBind (fn: Function, ctx: Object): Function {
   return fn.bind(ctx)
 }
 
+// 将上面的两个方法整合成一个bind方法，如果Function的prototype中存在bind方法，则执行原生bind函数，如果没有则执行polyfillBind垫片函数。
 export const bind = Function.prototype.bind
   ? nativeBind
   : polyfillBind
 
 /**
  * Convert an Array-like object to a real Array.
+ * 将一个类数组对象转化为一个真正的数组。
+ * while(i--), 先判断i为true Or false, 然后在执行--操作。
  */
 export function toArray (list: any, start?: number): Array<any> {
   start = start || 0
