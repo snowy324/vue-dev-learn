@@ -5,7 +5,7 @@ export const emptyObject = Object.freeze({})
 
 // these helpers produces better vm code in JS engines due to their
 // explicitness and function inlining
-// %check是flow里的谓词函数 isUndef判断参数是不是underfined或者null,如果是就返回true。
+// %check是flow里的谓词函数 isUndef判断参数是不是underfined或者null，如果是就返回true。
 export function isUndef (v: any): boolean %checks {
   return v === undefined || v === null
 }
