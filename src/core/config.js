@@ -9,29 +9,30 @@ import {
 import { LIFECYCLE_HOOKS } from 'shared/constants'
 
 export type Config = {
-  // user
-  optionMergeStrategies: { [key: string]: Function };
-  silent: boolean;
-  productionTip: boolean;
-  performance: boolean;
-  devtools: boolean;
-  errorHandler: ?(err: Error, vm: Component, info: string) => void;
-  warnHandler: ?(msg: string, vm: Component, trace: string) => void;
-  ignoredElements: Array<string | RegExp>;
+  // user 用户
+  optionMergeStrategies: { [key: string]: Function }; // 配置合并策略。
+  silent: boolean; // 是否静默。
+  productionTip: boolean; // 是否生产提示。
+  performance: boolean; // 是否性能（分析？）。
+  devtools: boolean; // 是否启用开发工具。
+  // 这种flow写法经测试，该变量可以为null或者undefined，也可以为函数，函数可以有三个参数（部分有也可以），也可以没有，但是类型必须符合，必须没有返回值或者直接手动返回undefined。
+  errorHandler: ?(err: Error, vm: Component, info: string) => void; // 异常处理处理函数。
+  warnHandler: ?(msg: string, vm: Component, trace: string) => void; // 警告处理处理函数。
+  ignoredElements: Array<string | RegExp>; // 忽略元素数组。
   keyCodes: { [key: string]: number | Array<number> };
 
-  // platform
-  isReservedTag: (x?: string) => boolean;
-  isReservedAttr: (x?: string) => boolean;
-  parsePlatformTagName: (x: string) => string;
-  isUnknownElement: (x?: string) => boolean;
-  getTagNamespace: (x?: string) => string | void;
-  mustUseProp: (tag: string, type: ?string, name: string) => boolean;
+  // platform 平台
+  isReservedTag: (x?: string) => boolean; // 是否是保留的标签。
+  isReservedAttr: (x?: string) => boolean; // 是否是保留的属性。
+  parsePlatformTagName: (x: string) => string; // 解析平台标签名称。
+  isUnknownElement: (x?: string) => boolean; // 是否是未知元素。
+  getTagNamespace: (x?: string) => string | void; // 获取标签命名空间。
+  mustUseProp: (tag: string, type: ?string, name: string) => boolean; //
 
-  // private
-  async: boolean;
+  // private 私有的
+  async: boolean; // 是否异步。
 
-  // legacy
+  // legacy 遗产
   _lifecycleHooks: Array<string>;
 };
 
