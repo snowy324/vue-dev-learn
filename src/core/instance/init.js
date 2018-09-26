@@ -14,27 +14,34 @@ let uid = 0
 
 export function initMixin (Vue: Class<Component>) {
   Vue.prototype._init = function (options?: Object) {
+    // vm指的就是this, 即new出来的Vue实例。
     const vm: Component = this
     // a uid
+    // uid用来表示Vue实例。
     vm._uid = uid++
 
     let startTag, endTag
     /* istanbul ignore if */
+    // 在非生产环境中，如果配置中performance开启，并且mark函数存在。
     if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
       startTag = `vue-perf-start:${vm._uid}`
       endTag = `vue-perf-end:${vm._uid}`
+      // 创造一个名为startTag的时间戳。
       mark(startTag)
     }
 
     // a flag to avoid this being observed
+    // 标记是Vue实例。
     vm._isVue = true
     // merge options
+    // _isComponent在core/vdom/create-component.js文件中。如果为true，猜测是组件。
     if (options && options._isComponent) {
-      // optimize internal component instantiation
+      // optimize 优化 internal component instantiation
       // since dynamic options merging is pretty slow, and none of the
       // internal component options needs special treatment.
       initInternalComponent(vm, options)
     } else {
+      // mergeOptions函数在../util/options.js中定义。
       vm.$options = mergeOptions(
         resolveConstructorOptions(vm.constructor),
         options || {},
