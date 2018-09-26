@@ -5,7 +5,9 @@ import { eventsMixin } from './events'
 import { lifecycleMixin } from './lifecycle'
 import { warn } from '../util/index'
 
+// 定义Vue类。
 function Vue (options) {
+	// 不为生产环境，而且this不是Vue的实例，提示错误，保证Vue只能用New Vue(options)去使用。
   if (process.env.NODE_ENV !== 'production' &&
     !(this instanceof Vue)
   ) {
