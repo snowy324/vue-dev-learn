@@ -19,7 +19,7 @@ if (process.env.NODE_ENV !== 'production') {
     perf.clearMeasures
   ) {
     // 当perf存在且拥有以上四个方法时。
-    // mark方法用于在给定tag的地方创造一个时间戳。
+    // mark方法用于创造一个名字位tag的时间戳。
     mark = tag => perf.mark(tag)
     // measure方法用于创造一个和起止tag有关具名的时间戳，可以利用它的属性来测试性能，如duration。
     measure = (name, startTag, endTag) => {
