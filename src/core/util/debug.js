@@ -8,9 +8,13 @@ export let tip = noop
 export let generateComponentTrace = (noop: any) // work around flow check
 export let formatComponentName = (noop: any)
 
+// 非生产环境。
 if (process.env.NODE_ENV !== 'production') {
+  // 判断是否有console对象。一般来说，低版本IE(8及以下)window对象没有console。
   const hasConsole = typeof console !== 'undefined'
+  // 正则里?:表示非捕获组。
   const classifyRE = /(?:^|[-_])(\w)/g
+  // 此函数将字符串开头、'-'连接、'_'连接的第一个字符变成大写。
   const classify = str => str
     .replace(classifyRE, c => c.toUpperCase())
     .replace(/[-_]/g, '')
@@ -66,8 +70,12 @@ if (process.env.NODE_ENV !== 'production') {
   }
 
   generateComponentTrace = vm => {
+    // 如果传入的对象是vue实例(_isVue)并且拥有首个非抽象的父组件($parent)=>暂时这么理解
+    // _isVue在src/core/instance/init.js文件中。猜测用来标记是不是Vue实例。
+    // $parent在src/core/instance/lifecycle.js文件中。猜测用来标记该组件的首个非抽象父组件。
     if (vm._isVue && vm.$parent) {
       const tree = []
+      // 当前递归序列。
       let currentRecursiveSequence = 0
       while (vm) {
         if (tree.length > 0) {
