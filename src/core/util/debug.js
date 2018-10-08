@@ -23,8 +23,10 @@ if (process.env.NODE_ENV !== 'production') {
     const trace = vm ? generateComponentTrace(vm) : ''
 
     if (config.warnHandler) {
+      // 如果配置里有warnHandler，则使用配置中的warnHandler。
       config.warnHandler.call(null, msg, vm, trace)
     } else if (hasConsole && (!config.silent)) {
+      // 输出警告。
       console.error(`[Vue warn]: ${msg}${trace}`)
     }
   }
