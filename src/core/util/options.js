@@ -253,6 +253,7 @@ function checkComponents (options: Object) {
 }
 
 export function validateComponentName (name: string) {
+  // 以字母开头，后面可以是数字字母下划线，或者是-连接符。
   if (!/^[a-zA-Z][\w-]*$/.test(name)) {
     warn(
       'Invalid component name: "' + name + '". Component names ' +
@@ -260,6 +261,9 @@ export function validateComponentName (name: string) {
       'and must start with a letter.'
     )
   }
+  // isBuiltInTag是一个函数，如果是"slot"或者"component"就返回true。
+  // config.isReservedTag默认是no（在share/util.js中），一个总返回false的函数。
+  // 会被重写，检测是否是平台保留的标签，如果是，则返回true。
   if (isBuiltInTag(name) || config.isReservedTag(name)) {
     warn(
       'Do not use built-in or reserved HTML elements as component ' +
@@ -275,29 +279,38 @@ export function validateComponentName (name: string) {
  */
 function normalizeProps (options: Object, vm: ?Component) {
   const props = options.props
+  // 如果props不存在则返回。
   if (!props) return
   const res = {}
   let i, val, name
   if (Array.isArray(props)) {
+    // 如果options里面的props是数组。
     i = props.length
     while (i--) {
       val = props[i]
       if (typeof val === 'string') {
+        // 当类型是字符串时，将props数组里的值，有连接符-的，转换为驼峰式命名。
+        // camelize在share/util.js中，尝试将连接符-后面的数字字母下划线(\w)转化为大写。
         name = camelize(val)
         res[name] = { type: null }
       } else if (process.env.NODE_ENV !== 'production') {
+        // props使用数组形式时，必须是字符串。
         warn('props must be strings when using array syntax.')
       }
     }
   } else if (isPlainObject(props)) {
+    // isPlainObject在share/util.js中。严格判断类型是否是对象。利用的也是toString方法。
     for (const key in props) {
       val = props[key]
       name = camelize(key)
+      // 如果props里面的值是对象，则直接用该值，如果不是，则猜测应该是字符串，它的类型必须是该字符串。
       res[name] = isPlainObject(val)
         ? val
         : { type: val }
     }
   } else if (process.env.NODE_ENV !== 'production') {
+    // 必须是数组或者对象。
+    // toRawType在share/util.js中，是一个封装的Object.prototype上的toString方法。
     warn(
       `Invalid value for option "props": expected an Array or an Object, ` +
       `but got ${toRawType(props)}.`,
@@ -311,21 +324,29 @@ function normalizeProps (options: Object, vm: ?Component) {
  * Normalize all injections into Object-based format
  */
 function normalizeInject (options: Object, vm: ?Component) {
+  // 先定义一个inject将原始传入的options.inject获取到。
   const inject = options.inject
+  // 如果inject不存在则返回。
   if (!inject) return
+  // 然后将原始传入options里的inject变成一个空对象。
   const normalized = options.inject = {}
   if (Array.isArray(inject)) {
+    // 如果inject是数组。
     for (let i = 0; i < inject.length; i++) {
+      // 将inject里的项作为normalized的键，同时值为一个对象，里面有"from"和inject[i]的键值对。
       normalized[inject[i]] = { from: inject[i] }
     }
   } else if (isPlainObject(inject)) {
+    // 如果是纯粹的对象。
     for (const key in inject) {
       const val = inject[key]
+      // extend在share/util.js中。使用for...in将第二个参数中的每个枚举属性（包括原型链上的）复制给第一个对象。
       normalized[key] = isPlainObject(val)
         ? extend({ from: key }, val)
         : { from: val }
     }
   } else if (process.env.NODE_ENV !== 'production') {
+    // 必须是数组或者对象。
     warn(
       `Invalid value for option "inject": expected an Array or an Object, ` +
       `but got ${toRawType(inject)}.`,
@@ -338,11 +359,13 @@ function normalizeInject (options: Object, vm: ?Component) {
  * Normalize raw function directives into object format.
  */
 function normalizeDirectives (options: Object) {
+  // 引用类型，使用同一个地址，直接修改dirs，同时也就修改了options.directives。
   const dirs = options.directives
   if (dirs) {
     for (const key in dirs) {
       const def = dirs[key]
       if (typeof def === 'function') {
+        // 如果dirs里的某项值类型的function，则将其转换为对象的形式。
         dirs[key] = { bind: def, update: def }
       }
     }
@@ -369,21 +392,25 @@ export function mergeOptions (
   vm?: Component
 ): Object {
   if (process.env.NODE_ENV !== 'production') {
+    // 不是生产环境时，验证组件名称是否合法。
     checkComponents(child)
   }
 
   if (typeof child === 'function') {
+    // 如果child类型是function。但是目前未知哪里会用到。
     child = child.options
   }
 
   normalizeProps(child, vm)
   normalizeInject(child, vm)
   normalizeDirectives(child)
+  // 声明扩展组件。
   const extendsFrom = child.extends
   if (extendsFrom) {
     parent = mergeOptions(parent, extendsFrom, vm)
   }
   if (child.mixins) {
+    // 混入。
     for (let i = 0, l = child.mixins.length; i < l; i++) {
       parent = mergeOptions(parent, child.mixins[i], vm)
     }
