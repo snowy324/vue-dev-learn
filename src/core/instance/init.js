@@ -99,8 +99,11 @@ export function initInternalComponent (vm: Component, options: InternalComponent
 
 export function resolveConstructorOptions (Ctor: Class<Component>) {
   let options = Ctor.options
+  // 当Ctors是基础构造器时，直接返回基础构造器里的options。
   if (Ctor.super) {
+    // super在global-api\extend.js中，给Vue拓展了extend方法，如果有super属性则说明Ctor是Vue.extend构建的子类。
     const superOptions = resolveConstructorOptions(Ctor.super)
+    // superOptions在global-api\extend.js中，Sub.superOptions = Super.options。Super在Vue.extend里面是this的缓存，所以这里的superOptions就是自身的options属性。
     const cachedSuperOptions = Ctor.superOptions
     if (superOptions !== cachedSuperOptions) {
       // super option changed,
