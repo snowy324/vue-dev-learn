@@ -341,10 +341,10 @@ export const identity = (_: any) => _
  * Generate a static keys string from compiler编译器 modules.
  * Array.prototype.reduce函数，接收两个参数，第一个参数reducer函数，第二个参数是initialValue累加器accmulator初始值，可以不传，默认为数组第一项。
  * reducer函数接收四个参数，accmulator累加器，currentValue当前值，currentIndex当前索引，array数组。
- * ModuleOptions是自定义的flow type。 在flow/compiler.js文件中定义， 其中staticKeys是一个Array<string>, 字符串类型的数组。
+ * ModuleOptions是自定义的flow type。 在flow/compiler.js文件中定义，其中staticKeys是一个Array<string>，字符串类型的数组。
  * 这个函数将一个由ModuleOptions类型的数据组成的数组，里面每一项的staticKeys用','瓶装成一个string并返回。
- * 这里的keys就是accmulator累加器， 用一个[]来进行初始化， 然后对每一项的staticKeys进行concat操作。 最后用join连接返回一个字符串。
- * Array.prototype.concat方法， 用来合并数组， 该方法不会改变原数组， 而是返回一个新的数组。
+ * 这里的keys就是accmulator累加器，用一个[]来进行初始化，然后对每一项的staticKeys进行concat操作。最后用join连接返回一个字符串。
+ * Array.prototype.concat方法，用来合并数组，该方法不会改变原数组，而是返回一个新的数组。
  */
 export function genStaticKeys (modules: Array<ModuleOptions>): string {
   return modules.reduce((keys, m) => {
@@ -355,11 +355,11 @@ export function genStaticKeys (modules: Array<ModuleOptions>): string {
 /**
  * Check if two values are loosely equal - that is,
  * if they are plain objects, do they have the same shape?
- * Javascript中， try...catch(e)... 可以让JS不因为try中的错误中断运行。 也可以在try中throw自定义的错误处理， 在catch中进行处理。
+ * Javascript中，try...catch(e)... 可以让JS不因为try中的错误中断运行。也可以在try中throw自定义的错误处理，在catch中进行处理。
  * Istanbul是Javascript中代码覆盖率测试工具。 注释中 * istanbul ignore next * 则是忽略计算代码覆盖率。
- * Array.prototype.every方法， 用来测试数组中每一项数据是否满足一项要求， 接收两个参数， 第一个参数是callback, 第二个参数是thisArg（用来callback执行时当做this）
- * every中callback接收三个参数， currentValue当前值，inedx当前索引，array数组。
- * every对数组中每一项执行callback函数， 如果遇到false则立即返回false, 且不再继续执行。 如果所有项都返回true, 则返回true。
+ * Array.prototype.every方法，用来测试数组中每一项数据是否满足一项要求，接收两个参数，第一个参数是callback，第二个参数是thisArg（用来callback执行时当做this）
+ * every中callback接收三个参数，currentValue当前值，inedx当前索引，array数组。
+ * every对数组中每一项执行callback函数，如果遇到false则立即返回false, 且不再继续执行。 如果所有项都返回true, 则返回true。
  * every不会改变原数组。
  * every对空数组始终返回true。 因为空数组的所有元素（为0）满足任何给定条件。
  */
@@ -396,17 +396,17 @@ export function looseEqual (a: any, b: any): boolean {
     }
   } else if (!isObjectA && !isObjectB) {
     // a和b都不是Object，那就是值类型。
-    // toString方法： 除了null和undefined之外，所有数据类型都具有toString()方法。
+    // toString方法：除了null和undefined之外，所有数据类型都具有toString()方法。
     // 而String方法也可以作用于null和undefined。
     // 同时也可以使用 + '' 的方法将其他数据转化为字符串。
     return String(a) === String(b)
   } else {
-    // a和b其中一个是Object, 另一个不是。
+    // a和b其中一个是Object，另一个不是。
     return false
   }
 }
 
-// 判断某个val是否存在于arr中。 如果存在返回索引值， 不存在则返回-1。
+// 判断某个val是否存在于arr中。如果存在返回索引值，不存在则返回-1。
 export function looseIndexOf (arr: Array<mixed>, val: mixed): number {
   for (let i = 0; i < arr.length; i++) {
     if (looseEqual(arr[i], val)) return i
