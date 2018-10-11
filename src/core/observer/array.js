@@ -6,6 +6,7 @@
 import { def } from '../util/index'
 
 const arrayProto = Array.prototype
+// Object.create(__proto__)，传入的第一个参数作为创造对象的__proto__。
 export const arrayMethods = Object.create(arrayProto)
 
 const methodsToPatch = [
@@ -19,7 +20,9 @@ const methodsToPatch = [
 ]
 
 /**
- * Intercept mutating methods and emit events
+ * Intercept截距 mutating变异 methods and emit events
+ * 将原生的方法变异，触发观察者的通知以及其他事件。
+ * 最后暴露arrayMethods对象，里面有7个属性，每个属性对应一个与原生方法同名的变异方法。
  */
 methodsToPatch.forEach(function (method) {
   // cache original method
@@ -31,14 +34,19 @@ methodsToPatch.forEach(function (method) {
     switch (method) {
       case 'push':
       case 'unshift':
+        // push是向数组末尾增加元素，unshift是向数组开头增加元素。
         inserted = args
         break
       case 'splice':
+        // slice方法获取第二个到最后的参数。
+        // 而splice方法，索引为2的参数开始正好就是插入数组的新元素。第一个参数是开始位置，第二个参数是删除元素的个数。
         inserted = args.slice(2)
         break
     }
+    // 如果有新增元素，触发observeArray事件。
     if (inserted) ob.observeArray(inserted)
     // notify change
+    // 通知观察者。
     ob.dep.notify()
     return result
   })
