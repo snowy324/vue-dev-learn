@@ -10,6 +10,7 @@ export function isReserved (str: string): boolean {
 
 /**
  * Define a property.
+ * 封装Object.defineProperty方法。传入三个参数：对象，键值，值，是否可以被枚举。
  */
 export function def (obj: Object, key: string, val: any, enumerable?: boolean) {
   Object.defineProperty(obj, key, {
