@@ -1,27 +1,57 @@
 /* @flow */
 
+// VNode是虚拟Dom。
+// 真实Dom有两个属性，nodeType和nodeValue。
+// nodeType有13种。其中比较重要的有：
+// 1，Element，代表元素。
+// 2，Attr，代表属性。
+// 3，Text，代表元素或者属性的文本内容。
+// 8，Comment，代表注释。
+// 9，Document，代表整个文档。（Dom树的根节点）
 export default class VNode {
+  // tag表示标签名称。
   tag: string | void;
+  // data表示一些数据。比如，attr代表属性。
+  // data: { "attr": { "id" : "app" } }
+  // 这个data表示id属性等于app。
   data: VNodeData | void;
+  // children表示子标签。
   children: ?Array<VNode>;
+  // text表示当前节点的文本。
   text: string | void;
+  // elm表示当前虚拟Dom对应的真实Dom节点。
   elm: Node | void;
+  // ns表示当前节点命名空间。
   ns: string | void;
+  // context表示当前节点上下文。
   context: Component | void; // rendered in this component's scope
+  // key表示子节点key属性。
   key: string | number | void;
+  // componentOptions表示组件配置项。
   componentOptions: VNodeComponentOptions | void;
+  // componentInstance表示组件实例。
   componentInstance: Component | void; // component instance
+  // parent表示当前节点的父节点。
   parent: VNode | void; // component placeholder node
 
   // strictly internal
+  // raw表示是否为原生HTML或只是普通文本。
   raw: boolean; // contains raw HTML? (server only)
+  // isStatic表示静态节点标志(keep-alive)。
   isStatic: boolean; // hoisted static node
+  // isRootInsert表示是否作为根节点插入。
   isRootInsert: boolean; // necessary for enter transition check
+  // isComment表示是否为注释节点。
   isComment: boolean; // empty comment placeholder?
+  // isCloned表示是否是克隆节点。
   isCloned: boolean; // is a cloned node?
+  // isOnce表示是否为v-once节点。
   isOnce: boolean; // is a v-once node?
+  // asyncFactory表示异步工厂方法。
   asyncFactory: Function | void; // async component factory function
+  // asyncMeta表示异步Meta。
   asyncMeta: Object | void;
+  // isAsyncPlaceholder表示是否是异步占位。
   isAsyncPlaceholder: boolean;
   ssrContext: Object | void;
   fnContext: Component | void; // real context vm for functional nodes
