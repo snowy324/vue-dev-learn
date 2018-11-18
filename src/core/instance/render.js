@@ -59,7 +59,9 @@ export function renderMixin (Vue: Class<Component>) {
   }
 
   Vue.prototype._render = function (): VNode {
+    // 缓存this。
     const vm: Component = this
+    // 解构赋值，获取options中的render函数，以及_parentVnode。
     const { render, _parentVnode } = vm.$options
 
     // reset _rendered flag on slots for duplicate slot check
