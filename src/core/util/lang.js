@@ -24,12 +24,15 @@ export function def (obj: Object, key: string, val: any, enumerable?: boolean) {
 /**
  * Parse simple path.
  */
+// 正则.表示除了/n之外的任何字符。/n表示一个换行符。
 const bailRE = /[^\w.$]/
 export function parsePath (path: string): any {
+  // 如果path以数字字母下划线开头，则直接return。
   if (bailRE.test(path)) {
     return
   }
   const segments = path.split('.')
+  // 使用递归方法，解析路径。
   return function (obj) {
     for (let i = 0; i < segments.length; i++) {
       if (!obj) return
