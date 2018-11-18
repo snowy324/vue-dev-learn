@@ -49,10 +49,13 @@ export default class Watcher {
     options?: ?Object,
     isRenderWatcher?: boolean
   ) {
+    // 将vue实例绑定到这个watcher的vm属性上。
     this.vm = vm
     if (isRenderWatcher) {
+      // 如果isRenderWatcher为true，则将vm的_watcher绑定为当前的watcher实例。
       vm._watcher = this
     }
+    // 向vm的_watchers属性中push进这个watcher实例。
     vm._watchers.push(this)
     // options
     if (options) {
@@ -64,23 +67,29 @@ export default class Watcher {
     } else {
       this.deep = this.user = this.computed = this.sync = false
     }
+    // cb表示callback。
     this.cb = cb
     this.id = ++uid // uid for batching
     this.active = true
+    // dirty属性是为了computed。
     this.dirty = this.computed // for computed watchers
     this.deps = []
     this.newDeps = []
     this.depIds = new Set()
     this.newDepIds = new Set()
+    // expression属性表示expOrFn函数转换成字符串。
     this.expression = process.env.NODE_ENV !== 'production'
       ? expOrFn.toString()
       : ''
     // parse expression for getter
     if (typeof expOrFn === 'function') {
+      // 如果expOrFn是一个函数，则直接将watcher实例的getter属性赋值为expOrFn。
       this.getter = expOrFn
     } else {
+      // parsePath定义在src/core/util/lang.js中。用于解析路径并得到某个对象中对应路径下的值。
       this.getter = parsePath(expOrFn)
       if (!this.getter) {
+        // 如果没有解析成功，则将this.getter变成一个空函数，并发出警告。
         this.getter = function () {}
         process.env.NODE_ENV !== 'production' && warn(
           `Failed watching path: "${expOrFn}" ` +
@@ -90,6 +99,7 @@ export default class Watcher {
         )
       }
     }
+    // 在新的版本中，这里似乎变成了使用lazy属性。
     if (this.computed) {
       this.value = undefined
       this.dep = new Dep()
@@ -100,6 +110,7 @@ export default class Watcher {
 
   /**
    * Evaluate the getter, and re-collect dependencies.
+   * 评估getter。并且重新收集依赖。
    */
   get () {
     pushTarget(this)
@@ -108,7 +119,9 @@ export default class Watcher {
     try {
       value = this.getter.call(vm, vm)
     } catch (e) {
+      // 猜测这里watcher的user属性表示的是是否为用户行为生成的watcher。
       if (this.user) {
+        // 提示错误。这里用到了expression。表示传入expOrFn的string形式。
         handleError(e, vm, `getter for watcher "${this.expression}"`)
       } else {
         throw e
