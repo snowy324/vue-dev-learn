@@ -138,23 +138,31 @@ export function defineReactive (
   customSetter?: ?Function,
   shallow?: boolean
 ) {
+  // 实例化一个依赖对象。
   const dep = new Dep()
 
+  // 获取传入对象的某个属性（key）的属性描述符。
   const property = Object.getOwnPropertyDescriptor(obj, key)
   if (property && property.configurable === false) {
+    // 如果property存在并且属性描述符中的configurable为不可配置，则直接返回。
     return
   }
 
   // cater for pre-defined getter/setters
+  // 获取该属性描述符的get。
   const getter = property && property.get
+  // 获取该属性描述符的set。
   const setter = property && property.set
   if ((!getter || setter) && arguments.length === 2) {
+    // 如果getter不存在或者setter存在，并且只传入了两个参数。（val并没有传入）。
     val = obj[key]
   }
 
   let childOb = !shallow && observe(val)
   Object.defineProperty(obj, key, {
+    // 可枚举。
     enumerable: true,
+    // 可配置。
     configurable: true,
     get: function reactiveGetter () {
       const value = getter ? getter.call(obj) : val
