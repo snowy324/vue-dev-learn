@@ -100,9 +100,12 @@ export default class VNode {
   }
 }
 
+// 传入一个string参数。返回一个注释节点。
 export const createEmptyVNode = (text: string = '') => {
   const node = new VNode()
+  // text表示node的文本或者属性的文本。
   node.text = text
+  // isComment表示是否为注释节点。
   node.isComment = true
   return node
 }
