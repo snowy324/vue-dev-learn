@@ -9,4 +9,5 @@ import platformModules from 'web/runtime/modules/index'
 // built-in modules have been applied.
 const modules = platformModules.concat(baseModules)
 
+// patch实际上是定义在core/vdom/patch中的createPatchFunction。
 export const patch: Function = createPatchFunction({ nodeOps, modules })
