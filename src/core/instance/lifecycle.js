@@ -48,16 +48,24 @@ export function initLifecycle (vm: Component) {
 }
 
 export function lifecycleMixin (Vue: Class<Component>) {
+  // 定义_update方法在Vue的prototype上。
   Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
+    // 缓存vm。
     const vm: Component = this
+    // 缓存$el。
     const prevEl = vm.$el
+    // 缓存_vnode。
     const prevVnode = vm._vnode
+    // activeInstance初始值是null。缓存activeInstance。
     const prevActiveInstance = activeInstance
     activeInstance = vm
+    // 将vm._vnode赋值为实参vnode。
     vm._vnode = vnode
     // Vue.prototype.__patch__ is injected in entry points
     // based on the rendering backend used.
     if (!prevVnode) {
+      // 如果prevVnode不存在，则说明需要初始化。
+      // __patch__方法定义在平台platform中，如web定义在web/runtime/index.js中。挂在Vue.prototype上。
       // initial render
       vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */)
     } else {
@@ -131,6 +139,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
   }
 }
 
+// 挂在组件。将vm对象挂载在elment元素上。hydrating的意义暂时不明确。
 export function mountComponent (
   vm: Component,
   el: ?Element,
@@ -138,12 +147,17 @@ export function mountComponent (
 ): Component {
   vm.$el = el
   if (!vm.$options.render) {
+    // 如果vm的$options里没有传入render。则把createEmptyVNode赋值给vm.$options.render。
+    // createEmptyVNode定义在src/core/vdom/vnode.js中。作用是创建一个注释空节点。
     vm.$options.render = createEmptyVNode
     if (process.env.NODE_ENV !== 'production') {
       /* istanbul ignore if */
       if ((vm.$options.template && vm.$options.template.charAt(0) !== '#') ||
         vm.$options.el || el) {
+        // 当options里的template存在但是第一个字符不是“#”，或者options里el存在，或者mountComponent函数执行时传入了el时发出警告。
         warn(
+          // runtime-only构建Vue，模板编译不可用。
+          // 通过将模板预编译进render函数，或者使用包含编译的构建。
           'You are using the runtime-only build of Vue where the template ' +
           'compiler is not available. Either pre-compile the templates into ' +
           'render functions, or use the compiler-included build.',
@@ -151,17 +165,20 @@ export function mountComponent (
         )
       } else {
         warn(
+          // 编译失败。template或者render函数未定义。
           'Failed to mount component: template or render function not defined.',
           vm
         )
       }
     }
   }
+  // 如果vm的$options中传入了render。直接唤起beforeMount钩子。
   callHook(vm, 'beforeMount')
 
   let updateComponent
   /* istanbul ignore if */
   if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
+    // 当在非生产环境，并且config中开启了performance且mark存在时。在updateComponent中进行性能测试。
     updateComponent = () => {
       const name = vm._name
       const id = vm._uid
@@ -312,21 +329,29 @@ export function deactivateChildComponent (vm: Component, direct?: boolean) {
   }
 }
 
+// 唤起某个vm的hook。
 export function callHook (vm: Component, hook: string) {
   // #7573 disable dep collection when invoking lifecycle hooks
+  // 调用Dep类的pushTarget方法，将Dep的静态属性target变成传入的值，并且将传入的值push到targetStack栈尾中。这里未传入，则Dep.target = undefined。
   pushTarget()
+  // hook是钩子名称。vm.$options[hook]是一个数组。
   const handlers = vm.$options[hook]
   if (handlers) {
     for (let i = 0, j = handlers.length; i < j; i++) {
       try {
+        // 将vm作为handlers[i]的this传入。这就是为什么在钩子中可以使用this指向当前组件的原因。
         handlers[i].call(vm)
       } catch (e) {
+        // handlerError定义在src/core/util/error.js中。为了处理错误（主要是处理errorCaptured钩子）。
         handleError(e, vm, `${hook} hook`)
       }
     }
   }
+  // _hasHookEvent定义在src/core/instance/events.js的initEvents方法中。vm._hasHookEvent = false。
   if (vm._hasHookEvent) {
+    // $emit定义在src/core/instance/events.js中。
     vm.$emit('hook:' + hook)
   }
+  // 调用Dep类的popTarget方法，将targetStack栈尾的项删除。
   popTarget()
 }
