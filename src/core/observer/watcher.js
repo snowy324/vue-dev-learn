@@ -21,6 +21,8 @@ let uid = 0
  * A watcher parses an expression, collects dependencies,
  * and fires callback when the expression value changes.
  * This is used for both the $watch() api and directives.
+ * 一个watcher解析一个表达式，收集依赖，并且在表达式的值发生改变时触发回调函数。
+ * 这个被用在$watch()api以及指令directives。
  */
 export default class Watcher {
   vm: Component;
