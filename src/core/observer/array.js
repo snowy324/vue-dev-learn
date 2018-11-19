@@ -28,7 +28,10 @@ methodsToPatch.forEach(function (method) {
   // cache original method
   const original = arrayProto[method]
   def(arrayMethods, method, function mutator (...args) {
+    // 将原始方法执行的结果缓存。
     const result = original.apply(this, args)
+    // 在Observer类示例化的时候，将传入的value的__ob__属性指向该Observer示例。
+    // 所以猜测这里的this是一个被Observer(value)里的value。
     const ob = this.__ob__
     let inserted
     switch (method) {
