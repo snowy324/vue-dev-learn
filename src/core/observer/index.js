@@ -36,6 +36,7 @@ export function toggleObserving (value: boolean) {
  * object. Once attached, the observer converts the target
  * object's property keys into getter/setters that
  * collect dependencies and dispatch updates.
+ * Observer类附属于每个被观察的object。一旦被观察，观察者将目标object的每个属性转换成getters/setters来收集依赖并且调度更新。
  */
 export class Observer {
   value: any;
@@ -45,6 +46,7 @@ export class Observer {
   constructor (value: any) {
     // Observer构造函数。
     this.value = value
+    // 每次实例化Observer的时候，就会实例化一个Dep依赖对象。Observer.dep = new Dep()。
     this.dep = new Dep()
     this.vmCount = 0
     // def定义在core/util/lang.js中。调用Object.defineProperty方法。将value的__ob__属性指向Observer实例对象自身。
@@ -60,8 +62,10 @@ export class Observer {
       // arrayMethods定义在core/observer/array.js中。是Array变异之后的方法，包括  'push','pop','shift','unshift','splice','sort','reverse'。
       // 变异之后的方法可以通知Observer。
       augment(value, arrayMethods, arrayKeys)
+      // 实例化Observer，传入的参数是数组的时候，执行observeArray方法。
       this.observeArray(value)
     } else {
+      // 实例化Observer，传入的参数不是数组的时候，执行walk方法。
       this.walk(value)
     }
   }
@@ -70,6 +74,8 @@ export class Observer {
    * Walk through each property and convert them into
    * getter/setters. This method should only be called when
    * value type is Object.
+   * 通过对每个属性执行walk函数，并把他们转换成getters/setters。
+   * 这个方法仅当传入的value类型是Object的时候才执行。
    */
   // 对Object里的每一个属性都调用defineReactive方法。
   walk (obj: Object) {
@@ -81,6 +87,7 @@ export class Observer {
 
   /**
    * Observe a list of Array items.
+   * 观察一个数组。
    */
   // 对Array里的每一项执行observe方法。
   observeArray (items: Array<any>) {
@@ -109,7 +116,6 @@ function protoAugment (target, src: Object, keys: any) {
  */
 /* istanbul ignore next */
 // 通过调用def方法，将target的所有key属性的属性描述符都定义成可配置，可枚举，可赋值。
-// 同时
 function copyAugment (target: Object, src: Object, keys: Array<string>) {
   for (let i = 0, l = keys.length; i < l; i++) {
     const key = keys[i]
@@ -121,13 +127,18 @@ function copyAugment (target: Object, src: Object, keys: Array<string>) {
  * Attempt to create an observer instance for a value,
  * returns the new observer if successfully observed,
  * or the existing observer if the value already has one.
+ * 尝试去为某个value创建一个observer实例，如果成功了则返回该实例，如果已经存在则直接返回存在的observer。
  */
 export function observe (value: any, asRootData: ?boolean): Observer | void {
+  // isObject定义在shared/util.js中。判断一个值是Object且不是null。
   if (!isObject(value) || value instanceof VNode) {
+    // 如果value不是对象，或者为空，或者是VNode的实例。直接return。
     return
   }
   let ob: Observer | void
+  // hasOwn定义在share/util.js中。封装了Object.hasOwnProperty方法。
   if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) {
+    // 如果Array里的某项拥有__ob__并且是Observer的实例。则直接读取这个__ob__。
     ob = value.__ob__
   } else if (
     shouldObserve &&
@@ -136,9 +147,11 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
     Object.isExtensible(value) &&
     !value._isVue
   ) {
+    // 这里相当于递归实例化Observer对象。
     ob = new Observer(value)
   }
   if (asRootData && ob) {
+    // 如果asRootData有值。vmCount加1。
     ob.vmCount++
   }
   return ob
@@ -171,6 +184,7 @@ export function defineReactive (
   const setter = property && property.set
   if ((!getter || setter) && arguments.length === 2) {
     // 如果getter不存在或者setter存在，并且只传入了两个参数。（val并没有传入）。
+    // 这里的目的是在val不传入的情况下初始化val，但是不明白为什么要判断getter不存在或者setter存在。
     val = obj[key]
   }
 
@@ -181,6 +195,7 @@ export function defineReactive (
     // 可配置。
     configurable: true,
     get: function reactiveGetter () {
+      // 如果这个对象的这个属性的属性描述符已经有getter，则直接执行这个getter，并当obj当成this传进去。否则等于val。（val是传入的参数）
       const value = getter ? getter.call(obj) : val
       if (Dep.target) {
         dep.depend()
@@ -197,6 +212,8 @@ export function defineReactive (
       const value = getter ? getter.call(obj) : val
       /* eslint-disable no-self-compare */
       if (newVal === value || (newVal !== newVal && value !== value)) {
+        // 这里加上自身判断，因为NaN === NaN 返回的是false。
+        // 这样当newVal和value都是NaN的时候，就符合后面的那种情况。
         return
       }
       /* eslint-enable no-self-compare */
