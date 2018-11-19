@@ -16,14 +16,17 @@ import {
   isServerRendering
 } from '../util/index'
 
+// Object.getOwnPropertyNames返回一个由指定对象的所有自身属性的属性名（包括不可枚举属性但不包括Symbol值作为名称的属性）组成的数组。
 const arrayKeys = Object.getOwnPropertyNames(arrayMethods)
 
 /**
  * In some cases we may want to disable observation inside a component's
  * update computation.
+ * 在有些情况下我们可能会想要在组件的更新计算中禁用观察。
  */
+// 定义一个flag表示是否观察。
 export let shouldObserve: boolean = true
-
+// 切换shouldObserve。
 export function toggleObserving (value: boolean) {
   shouldObserve = value
 }
@@ -40,14 +43,22 @@ export class Observer {
   vmCount: number; // number of vms that has this object as root $data
 
   constructor (value: any) {
+    // Observer构造函数。
     this.value = value
     this.dep = new Dep()
     this.vmCount = 0
+    // def定义在core/util/lang.js中。调用Object.defineProperty方法。将value的__ob__属性指向Observer实例对象自身。
     def(value, '__ob__', this)
     if (Array.isArray(value)) {
+      // 如果传入的value是数组。
+      // hasProto定义在scr/core/env.js中。通过判断一个空对象能否访问__proto__属性。
       const augment = hasProto
         ? protoAugment
         : copyAugment
+      // 如果hasProto存在，则直接使用protoAugment方法，将value的__proto__等于arrayMethods。
+      // 如果hasProto不存在。则使用copyAugment方法。分别将arrayKeys里的方法变成arrayMethods里对应的变异后的方法。
+      // arrayMethods定义在core/observer/array.js中。是Array变异之后的方法，包括  'push','pop','shift','unshift','splice','sort','reverse'。
+      // 变异之后的方法可以通知Observer。
       augment(value, arrayMethods, arrayKeys)
       this.observeArray(value)
     } else {
@@ -60,6 +71,7 @@ export class Observer {
    * getter/setters. This method should only be called when
    * value type is Object.
    */
+  // 对Object里的每一个属性都调用defineReactive方法。
   walk (obj: Object) {
     const keys = Object.keys(obj)
     for (let i = 0; i < keys.length; i++) {
@@ -70,6 +82,7 @@ export class Observer {
   /**
    * Observe a list of Array items.
    */
+  // 对Array里的每一项执行observe方法。
   observeArray (items: Array<any>) {
     for (let i = 0, l = items.length; i < l; i++) {
       observe(items[i])
@@ -83,6 +96,7 @@ export class Observer {
  * Augment an target Object or Array by intercepting
  * the prototype chain using __proto__
  */
+// 直接将target的__proto__设置成src。
 function protoAugment (target, src: Object, keys: any) {
   /* eslint-disable no-proto */
   target.__proto__ = src
@@ -94,6 +108,8 @@ function protoAugment (target, src: Object, keys: any) {
  * hidden properties.
  */
 /* istanbul ignore next */
+// 通过调用def方法，将target的所有key属性的属性描述符都定义成可配置，可枚举，可赋值。
+// 同时
 function copyAugment (target: Object, src: Object, keys: Array<string>) {
   for (let i = 0, l = keys.length; i < l; i++) {
     const key = keys[i]
