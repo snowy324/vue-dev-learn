@@ -21,10 +21,14 @@ import {
 export let activeInstance: any = null
 export let isUpdatingChildComponent: boolean = false
 
+// initLifecycle在Vue.prototype._init方法中执行。
+// 在mergeOptions和initProxy之后，第一个执行（相对于initEvents，initRender，callHook('beforeCreate')，initInjections，initState，initProvide，callHook('created')之前。
 export function initLifecycle (vm: Component) {
+  // 缓存vm的options。
   const options = vm.$options
 
   // locate first non-abstract parent
+  // 定位第一个非抽象的父级。
   let parent = options.parent
   if (parent && !options.abstract) {
     while (parent.$options.abstract && parent.$parent) {
@@ -33,10 +37,13 @@ export function initLifecycle (vm: Component) {
     parent.$children.push(vm)
   }
 
+  // 将得到的parent绑定在vm实例的$parent上。
   vm.$parent = parent
+  // 如果parent存在，则将vm实例的$root属性指定为parent的$root，如果不存在则直接指向自身。
   vm.$root = parent ? parent.$root : vm
-
+  // 初始化vm实例的children属性为一个空数组。
   vm.$children = []
+  // 初始化vm实例的$refs属性为一个空对象。
   vm.$refs = {}
 
   vm._watcher = null
