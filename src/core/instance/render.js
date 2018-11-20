@@ -16,17 +16,26 @@ import VNode, { createEmptyVNode } from '../vdom/vnode'
 import { isUpdatingChildComponent } from './lifecycle'
 
 export function initRender (vm: Component) {
+  // 初始化vm实例的_vnnode属性为null。子树的根节点。
   vm._vnode = null // the root of the child tree
+  // 初始化vm的_staticTrees属性为null。v-once指令的缓存树。
   vm._staticTrees = null // v-once cached trees
+  // 获取并缓存vm实例的$options。
   const options = vm.$options
+  // 获取并缓存option里的_parentVnode（注释是一个父级树上的占位节点）。同时赋值给vm实例的$vnode属性。
   const parentVnode = vm.$vnode = options._parentVnode // the placeholder node in parent tree
+  // 获取并缓存parentVnode里的context。
   const renderContext = parentVnode && parentVnode.context
   vm.$slots = resolveSlots(options._renderChildren, renderContext)
+  // emptyObject定义在shared/util.js中。是一个被Object.freeze({})冻结的空对象。
+  // 初始化vm实例的$scopedSlots为一个冻结的空对象。
   vm.$scopedSlots = emptyObject
   // bind the createElement fn to this instance
   // so that we get proper render context inside it.
   // args order: tag, data, children, normalizationType, alwaysNormalize
   // internal version is used by render functions compiled from templates
+  // 把createELement函数绑定到这个vm实例上。这样我们可以在实例里获得合适的渲染上下文。
+  // 参数顺序：标签tag，数据data，子集children，规范化类型normalizationType，是否始终规范化alwaysNormalize。
   vm._c = (a, b, c, d) => createElement(vm, a, b, c, d, false)
   // normalization is always applied for the public version, used in
   // user-written render functions.
