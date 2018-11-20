@@ -33,12 +33,15 @@ export function createElement (
   normalizationType: any,
   alwaysNormalize: boolean
 ): VNode | Array<VNode> {
+  // isPrimitive定义在shared/util.js中，作用是判断传入参数是否为原始值：string，number，symbol，boolean。
   if (Array.isArray(data) || isPrimitive(data)) {
     normalizationType = children
     children = data
     data = undefined
   }
+  // isTrue定义在shared/util.js中。作用是判断传入参数是否全等于true。
   if (isTrue(alwaysNormalize)) {
+    // ALWAYS_NORMALIZE值是2。
     normalizationType = ALWAYS_NORMALIZE
   }
   return _createElement(context, tag, data, children, normalizationType)
@@ -52,6 +55,7 @@ export function _createElement (
   normalizationType?: number
 ): VNode | Array<VNode> {
   if (isDef(data) && isDef((data: any).__ob__)) {
+    // 如果data是null或者undefined，并且data.__ob__也是null或者undefined时。提出警告。并返回一个空的VNode（注释节点）。
     process.env.NODE_ENV !== 'production' && warn(
       `Avoid using observed data object as vnode data: ${JSON.stringify(data)}\n` +
       'Always create fresh vnode data objects in each render!',
