@@ -36,9 +36,11 @@ export function initRender (vm: Component) {
   // internal version is used by render functions compiled from templates
   // 把createELement函数绑定到这个vm实例上。这样我们可以在实例里获得合适的渲染上下文。
   // 参数顺序：标签tag，数据data，子集children，规范化类型normalizationType，是否始终规范化alwaysNormalize。
+  // createElement定义在vdom/create-element.js中。封装了_createElement方法。
   vm._c = (a, b, c, d) => createElement(vm, a, b, c, d, false)
   // normalization is always applied for the public version, used in
   // user-written render functions.
+  // 规划化始终应用在公共版本里，在用户编写的渲染函数中。
   vm.$createElement = (a, b, c, d) => createElement(vm, a, b, c, d, true)
 
   // $attrs & $listeners are exposed for easier HOC creation.
