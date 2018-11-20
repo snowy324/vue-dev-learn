@@ -10,7 +10,9 @@ import {
 import { updateListeners } from '../vdom/helpers/index'
 
 export function initEvents (vm: Component) {
+  // 初始化vm实例的_events属性为一个空对象。
   vm._events = Object.create(null)
+  // 初始化vm实例的_hasHookEvent属性为false。
   vm._hasHookEvent = false
   // init parent attached events
   const listeners = vm.$options._parentListeners
