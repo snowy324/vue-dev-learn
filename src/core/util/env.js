@@ -57,6 +57,8 @@ export const isServerRendering = () => {
 export const devtools = inBrowser && window.__VUE_DEVTOOLS_GLOBAL_HOOK__
 
 /* istanbul ignore next */
+// 用来判断是否是Javascript运行时环境内建函数。
+// Function.prototype.toString()当是js运行时环境内建函数时，返回字符串的函数体就会包含native code。
 export function isNative (Ctor: any): boolean {
   return typeof Ctor === 'function' && /native code/.test(Ctor.toString())
 }
