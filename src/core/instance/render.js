@@ -49,6 +49,7 @@ export function initRender (vm: Component) {
 
   /* istanbul ignore else */
   if (process.env.NODE_ENV !== 'production') {
+    // attrs和listeners都是只读的。不可修改。在非生产环境下尝试修改都会提出警告。
     defineReactive(vm, '$attrs', parentData && parentData.attrs || emptyObject, () => {
       !isUpdatingChildComponent && warn(`$attrs is readonly.`, vm)
     }, true)
