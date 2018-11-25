@@ -44,9 +44,11 @@ if (process.env.NODE_ENV !== 'production') {
 
   const hasHandler = {
     has (target, key) {
+      // has表示key是否在target中的结果。
       const has = key in target
       const isAllowed = allowedGlobals(key) || (typeof key === 'string' && key.charAt(0) === '_')
       if (!has && !isAllowed) {
+        // 如果target没有key属性，或者不被允许。发出警告。
         warnNonPresent(target, key)
       }
       return has || !isAllowed
