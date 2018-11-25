@@ -28,9 +28,12 @@ Vue.prototype.$mount = function (
     return this
   }
 
+  // 缓存options。
   const options = this.$options
   // resolve template/el and convert to render function
   if (!options.render) {
+    // 如果options里没有定义render。
+    // 获取options里的template。
     let template = options.template
     if (template) {
       if (typeof template === 'string') {
@@ -53,6 +56,7 @@ Vue.prototype.$mount = function (
         return this
       }
     } else if (el) {
+      // 如果template没有定义，则对el执行getOuterHTML方法。
       template = getOuterHTML(el)
     }
     if (template) {

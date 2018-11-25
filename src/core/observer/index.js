@@ -49,7 +49,8 @@ export class Observer {
     // 每次实例化Observer的时候，就会实例化一个Dep依赖对象。Observer.dep = new Dep()。
     this.dep = new Dep()
     this.vmCount = 0
-    // def定义在core/util/lang.js中。调用Object.defineProperty方法。将value的__ob__属性指向Observer实例对象自身。
+    // def定义在core/util/lang.js中。调用Object.defineProperty方法。将value的__ob__属性指向Observer实例对象自身。不可被枚举。
+    // 通过这里，就将vm和__ob__关联起来了。
     def(value, '__ob__', this)
     if (Array.isArray(value)) {
       // 如果传入的value是数组。

@@ -185,12 +185,15 @@ const computedWatcherOptions = { computed: true }
 
 function initComputed (vm: Component, computed: Object) {
   // $flow-disable-line
+  // 初始化并缓存vm实例的_computedWatchers属性为一个空对象。
   const watchers = vm._computedWatchers = Object.create(null)
   // computed properties are just getters during SSR
+  // 在服务端渲染中，计算属性仅仅只能是getters。
   const isSSR = isServerRendering()
 
   for (const key in computed) {
     const userDef = computed[key]
+    // computed里的属性可以写get，也可以直接写一个函数。
     const getter = typeof userDef === 'function' ? userDef : userDef.get
     if (process.env.NODE_ENV !== 'production' && getter == null) {
       warn(
@@ -201,6 +204,7 @@ function initComputed (vm: Component, computed: Object) {
 
     if (!isSSR) {
       // create internal watcher for the computed property.
+      // 为计算属性创建内部watcher。
       watchers[key] = new Watcher(
         vm,
         getter || noop,
@@ -216,8 +220,10 @@ function initComputed (vm: Component, computed: Object) {
       defineComputed(vm, key, userDef)
     } else if (process.env.NODE_ENV !== 'production') {
       if (key in vm.$data) {
+        // 如果该该计算属性的名称与data里的属性同名，发出警告。
         warn(`The computed property "${key}" is already defined in data.`, vm)
       } else if (vm.$options.props && key in vm.$options.props) {
+        // 如果该该计算属性的名称与prop里的属性同名，发出警告。
         warn(`The computed property "${key}" is already defined as a prop.`, vm)
       }
     }
