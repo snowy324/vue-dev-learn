@@ -46,9 +46,13 @@ export function proxy (target: Object, sourceKey: string, key: string) {
 }
 
 export function initState (vm: Component) {
-  vm._watchers = []
+  // 初始化vm实例的watchers属性为一个空数组。
+  vm.watchers = []
+  // 缓存vm实例的$options。
   const opts = vm.$options
+  // 如果$options里存在props则执行initProps。
   if (opts.props) initProps(vm, opts.props)
+  // 如果$options里存在methods则执行initMethods。
   if (opts.methods) initMethods(vm, opts.methods)
   if (opts.data) {
     initData(vm)
@@ -103,6 +107,7 @@ function initProps (vm: Component, propsOptions: Object) {
     // during Vue.extend(). We only need to proxy props defined at
     // instantiation here.
     if (!(key in vm)) {
+      // proxy将vm实例上的key属性都设置属性描述符，get和set分别代理到_props里的key属性。
       proxy(vm, `_props`, key)
     }
   }
@@ -110,11 +115,16 @@ function initProps (vm: Component, propsOptions: Object) {
 }
 
 function initData (vm: Component) {
+  // 缓存vm实例$options上的data。
   let data = vm.$options.data
+  // 如果data是一个function。则使用getData方法去提取，不是则直接使用。
+  // 同时将vm的_data属性赋值。
   data = vm._data = typeof data === 'function'
     ? getData(data, vm)
     : data || {}
   if (!isPlainObject(data)) {
+    // isPlainObject定义在shared/util.js中。
+    // 判断是否是纯粹的对象。如果不是，则将其赋值为一个空对象。并提出警告，data函数必须返回一个对象。
     data = {}
     process.env.NODE_ENV !== 'production' && warn(
       'data functions should return an object:\n' +
@@ -130,6 +140,7 @@ function initData (vm: Component) {
   while (i--) {
     const key = keys[i]
     if (process.env.NODE_ENV !== 'production') {
+      // 如果methods里有同名的，则提出警告。
       if (methods && hasOwn(methods, key)) {
         warn(
           `Method "${key}" has already been defined as a data property.`,
@@ -137,24 +148,30 @@ function initData (vm: Component) {
         )
       }
     }
+    // hasOwn定义在share/util.js中。用于判断某个对象中是否包含某个属性。
     if (props && hasOwn(props, key)) {
+      // 如果prop是里有同名的，则提出警告。
       process.env.NODE_ENV !== 'production' && warn(
         `The data property "${key}" is already declared as a prop. ` +
         `Use prop default value instead.`,
         vm
       )
     } else if (!isReserved(key)) {
+      // proxy封装了Object.defineProperty将vm实例上的key属性代理到_data属性下的key属性。
       proxy(vm, `_data`, key)
     }
   }
   // observe data
+  // observe定义在core/observer/index.js中。
   observe(data, true /* asRootData */)
 }
 
 export function getData (data: Function, vm: Component): any {
   // #7573 disable dep collection when invoking data getters
+  // 当唤起data的getters的时候禁用依赖收集。
   pushTarget()
   try {
+    // 返回data的执行结果，执行上下文是vm对象，传入一个参数是vm对象。
     return data.call(vm, vm)
   } catch (e) {
     handleError(e, vm, `data()`)
@@ -251,10 +268,12 @@ function createComputedGetter (key) {
 }
 
 function initMethods (vm: Component, methods: Object) {
+  // 缓存vm实例$options里的props。
   const props = vm.$options.props
   for (const key in methods) {
     if (process.env.NODE_ENV !== 'production') {
       if (methods[key] == null) {
+        // 如果该方法定义为null，则提出警告。
         warn(
           `Method "${key}" has an undefined value in the component definition. ` +
           `Did you reference the function correctly?`,
@@ -262,18 +281,23 @@ function initMethods (vm: Component, methods: Object) {
         )
       }
       if (props && hasOwn(props, key)) {
+        // 如果该方法和props里的属性名称相同，则提出警告。
         warn(
           `Method "${key}" has already been defined as a prop.`,
           vm
         )
       }
+      // isReserved定义在core/util/lang.js中。用于判断一个字符串是否以$或者_开头。
       if ((key in vm) && isReserved(key)) {
+        // 如果该方法已经存在于vm实例中，并且以_或者$开头，则提出警告。
         warn(
           `Method "${key}" conflicts with an existing Vue instance method. ` +
           `Avoid defining component methods that start with _ or $.`
         )
       }
     }
+    // bind方法定义在shared/util.js中。用于将函数的上下文绑定到指定对象中。bind包含一个原生的和一个polyfill的方法。
+    // 将该方法的名称作为vm实例的属性，函数绑定vm实例为上下文之后，作为该属性的值。
     vm[key] = methods[key] == null ? noop : bind(methods[key], vm)
   }
 }
