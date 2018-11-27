@@ -349,7 +349,7 @@ export function stateMixin (Vue: Class<Component>) {
     dataDef.set = function (newData: Object) {
       warn(
         'Avoid replacing instance root $data. ' +
-        'Use nested data properties instead.',
+        'Use nested嵌套 data properties instead.',
         this
       )
     }
@@ -357,12 +357,17 @@ export function stateMixin (Vue: Class<Component>) {
       warn(`$props is readonly.`, this)
     }
   }
+  // 将Vue.prototype的$data和$props属性设置属性描述符。
+  // get的时候，返回_data和_props。
+  // set的时候，提出警告。
   Object.defineProperty(Vue.prototype, '$data', dataDef)
   Object.defineProperty(Vue.prototype, '$props', propsDef)
 
+  // set方法定义在observer/index.js中。挂载到Vue.prototype.$set上。
   Vue.prototype.$set = set
+  // del方法定义在observer/index.js中。挂载到Vue.prototype.$del上。
   Vue.prototype.$delete = del
-
+  // 定义Vue.prototype.$watch方法。
   Vue.prototype.$watch = function (
     expOrFn: string | Function,
     cb: any,
