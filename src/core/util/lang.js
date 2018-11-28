@@ -26,8 +26,9 @@ export function def (obj: Object, key: string, val: any, enumerable?: boolean) {
 /**
  * Parse simple path.
  */
-// 正则.表示除了/n之外的任何字符。/n表示一个换行符。
+// 正则。表示除了/n之外的任何字符。/n表示一个换行符。
 const bailRE = /[^\w.$]/
+// 返回了一个函数。利用闭包，这个函数用来获取传入参数obj的相关属性。
 export function parsePath (path: string): any {
   // 如果path以数字字母下划线开头，则直接return。
   if (bailRE.test(path)) {

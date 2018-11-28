@@ -60,6 +60,8 @@ export function initState (vm: Component) {
     observe(vm._data = {}, true /* asRootData */)
   }
   if (opts.computed) initComputed(vm, opts.computed)
+  // nativeWatch定义在core/util/env.js。获取Object.prototype.watch方法。
+  // 但是这个方法不建议使用，因为只有Gecko实现了。
   if (opts.watch && opts.watch !== nativeWatch) {
     initWatch(vm, opts.watch)
   }
@@ -312,10 +314,12 @@ function initWatch (vm: Component, watch: Object) {
   for (const key in watch) {
     const handler = watch[key]
     if (Array.isArray(handler)) {
+      // watch可以写成数组。
       for (let i = 0; i < handler.length; i++) {
         createWatcher(vm, key, handler[i])
       }
     } else {
+      // 如果不是数组，直接执行createWatcher。
       createWatcher(vm, key, handler)
     }
   }
@@ -328,10 +332,12 @@ function createWatcher (
   options?: Object
 ) {
   if (isPlainObject(handler)) {
+    // watch可以写成对象的形式，可以写入deep和immediate参数。
     options = handler
     handler = handler.handler
   }
   if (typeof handler === 'string') {
+    // watch里面可以直接调用vm中的方法和变量？
     handler = vm[handler]
   }
   return vm.$watch(expOrFn, handler, options)
@@ -368,11 +374,15 @@ export function stateMixin (Vue: Class<Component>) {
     cb: any,
     options?: Object
   ): Function {
+    // 缓存vm。
     const vm: Component = this
     if (isPlainObject(cb)) {
       return createWatcher(vm, expOrFn, cb, options)
     }
     options = options || {}
+    // 把options里的user属性赋值为true。在Watcher的构造函数里，会判断这个user属性。
+    // 是true则表示是用户写的watch。
+    // 如果options里面有deep，也是在这里传入的。
     options.user = true
     const watcher = new Watcher(vm, expOrFn, cb, options)
     if (options.immediate) {

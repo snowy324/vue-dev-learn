@@ -17,6 +17,7 @@ export const isIOS = (UA && /iphone|ipad|ipod|ios/.test(UA)) || (weexPlatform ==
 export const isChrome = UA && /chrome\/\d+/.test(UA) && !isEdge
 
 // Firefox has a "watch" function on Object.prototype...
+// 只有Gecko实现了Object.prototype.watch和unwatch方法。
 export const nativeWatch = ({}).watch
 
 export let supportsPassive = false

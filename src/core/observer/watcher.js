@@ -165,12 +165,16 @@ export default class Watcher {
         dep.removeSub(this)
       }
     }
+    // 这里利用tmp交换了depIds以及newDepIds。
     let tmp = this.depIds
     this.depIds = this.newDepIds
     this.newDepIds = tmp
+    // 交换完成后将newDepIds清空。
     this.newDepIds.clear()
+    // 这里利用tmp交换了deps以及newDeps。
     tmp = this.deps
     this.deps = this.newDeps
+    // 交换完成后将newDeps清空。
     this.newDeps = tmp
     this.newDeps.length = 0
   }
