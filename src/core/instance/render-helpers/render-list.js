@@ -4,6 +4,7 @@ import { isObject, isDef } from 'core/util/index'
 
 /**
  * Runtime helper for rendering v-for lists.
+ * 运行时助手，渲染v-for列表。
  */
 export function renderList (
   val: any,
