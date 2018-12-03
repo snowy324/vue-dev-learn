@@ -28,12 +28,18 @@ import {
   isPrimitive
 } from '../util/index'
 
+// 创建一个空的VNode。
 export const emptyNode = new VNode('', {}, [])
 
+// 定义hooks数组。
 const hooks = ['create', 'activate', 'update', 'remove', 'destroy']
 
 function sameVnode (a, b) {
+  // 判断a和b的key全等，并且：
+  // 一，或者，a和b的tag全等，且isComment全等，且a和b都不是null和undefined，且sameInputType执行a和b结果为true。
+  // 二，或者，a的isAsyncPlaceholder是true，且a的asyncFactory和b的asyncFactory全等，且b的asyncFactory的error是undefined或者Null。
   return (
+    // key是节点的key属性。
     a.key === b.key && (
       (
         a.tag === b.tag &&
@@ -50,10 +56,14 @@ function sameVnode (a, b) {
 }
 
 function sameInputType (a, b) {
+  // 如果a.tag不等于input，直接return一个true。
   if (a.tag !== 'input') return true
   let i
+  // 获取a.data.attrs.type和b.data.attrs.type。
   const typeA = isDef(i = a.data) && isDef(i = i.attrs) && i.type
   const typeB = isDef(i = b.data) && isDef(i = i.attrs) && i.type
+  // 如果typeA全等于typeB或者isTextInputType判断typeA和typeB都为true。
+  // isTextInputType定义在web/util/element.js中。判断传入值是不是'text,number,password,search,email,tel,url'中的一个。
   return typeA === typeB || isTextInputType(typeA) && isTextInputType(typeB)
 }
 
