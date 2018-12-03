@@ -34,20 +34,26 @@ import {
 
 // inline hooks to be invoked on component VNodes during patch
 const componentVNodeHooks = {
+  // init方法。
   init (vnode: VNodeWithData, hydrating: boolean): ?boolean {
     if (
       vnode.componentInstance &&
       !vnode.componentInstance._isDestroyed &&
       vnode.data.keepAlive
     ) {
+      // 当vode.componentInstance为true，且vode.componentInstance._isDestroyed不为true，且data.keepAlive为true。
       // kept-alive components, treat as a patch
+      // 缓存vode。
       const mountedNode: any = vnode // work around flow
+      // 调用预处理方法。
       componentVNodeHooks.prepatch(mountedNode, mountedNode)
     } else {
+      // 调用createComponentInstanceForVnode并赋值给vnode.componentInstance。
       const child = vnode.componentInstance = createComponentInstanceForVnode(
         vnode,
         activeInstance
       )
+      // 调用$mount方法。
       child.$mount(hydrating ? vnode.elm : undefined, hydrating)
     }
   },
