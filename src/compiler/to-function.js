@@ -17,9 +17,12 @@ function createFunction (code, errors) {
   }
 }
 
+// 传入一个compile函数。
 export function createCompileToFunctionFn (compile: Function): Function {
+  // 定义cache为一个空对象。
   const cache = Object.create(null)
 
+  // 返回一个函数。
   return function compileToFunctions (
     template: string,
     options?: CompilerOptions,
