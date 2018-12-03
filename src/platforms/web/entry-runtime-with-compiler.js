@@ -13,7 +13,9 @@ const idToTemplate = cached(id => {
   const el = query(id)
   return el && el.innerHTML
 })
+// 缓存Vue.prototype.$mount方法。
 const mount = Vue.prototype.$mount
+// 重新定义$mount方法。
 Vue.prototype.$mount = function (
   el?: string | Element,
   hydrating?: boolean
@@ -22,6 +24,7 @@ Vue.prototype.$mount = function (
 
   /* istanbul ignore if */
   if (el === document.body || el === document.documentElement) {
+    // 当el绑定在body或者html上时，提出警告。
     process.env.NODE_ENV !== 'production' && warn(
       `Do not mount Vue to <html> or <body> - mount to normal elements instead.`
     )
@@ -90,14 +93,18 @@ Vue.prototype.$mount = function (
  */
 function getOuterHTML (el: Element): string {
   if (el.outerHTML) {
+    // element.outerHTML可以用来获取描述元素（包括其后代）的序列化HTML片段。
     return el.outerHTML
   } else {
+    // 如果没有获取到，则创建一个div。
     const container = document.createElement('div')
+    // 深度clone一个节点。
     container.appendChild(el.cloneNode(true))
     return container.innerHTML
   }
 }
 
+// 讲compileToFunctions绑定在Vue.compile上。
 Vue.compile = compileToFunctions
 
 export default Vue
