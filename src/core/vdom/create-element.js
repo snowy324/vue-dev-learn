@@ -35,6 +35,8 @@ export function createElement (
 ): VNode | Array<VNode> {
   // isPrimitive定义在shared/util.js中，作用是判断传入参数是否为原始值：string，number，symbol，boolean。
   if (Array.isArray(data) || isPrimitive(data)) {
+    // 在这种情况下，参数的顺序变化。
+    // data变成undefined。children变成data。normalizationType变成children。
     normalizationType = children
     children = data
     data = undefined
@@ -44,6 +46,7 @@ export function createElement (
     // ALWAYS_NORMALIZE值是2。
     normalizationType = ALWAYS_NORMALIZE
   }
+  // 调用_createElement方法创建VNode。
   return _createElement(context, tag, data, children, normalizationType)
 }
 
@@ -55,7 +58,8 @@ export function _createElement (
   normalizationType?: number
 ): VNode | Array<VNode> {
   if (isDef(data) && isDef((data: any).__ob__)) {
-    // 如果data是null或者undefined，并且data.__ob__也是null或者undefined时。提出警告。并返回一个空的VNode（注释节点）。
+    // 如果data不是null也不是undefined，并且data.__ob__也是null或者undefined时。提出警告。并返回一个空的VNode（注释节点）。
+    // 如果data的__ob__存在，则说明data是被Observer观察的对象。
     process.env.NODE_ENV !== 'production' && warn(
       `Avoid using observed data object as vnode data: ${JSON.stringify(data)}\n` +
       'Always create fresh vnode data objects in each render!',
@@ -64,19 +68,25 @@ export function _createElement (
     return createEmptyVNode()
   }
   // object syntax in v-bind
+  // v-bind的对象语法。
   if (isDef(data) && isDef(data.is)) {
+    // 如果data的is不是null也不是undefined。就把data.is赋值给tag。
     tag = data.is
   }
   if (!tag) {
     // in case of component :is set to falsy value
+    // 在component :is设置了一个假值的情况下。
+    // 如果tag值不存在，则返回一个空的VNode注释节点。
     return createEmptyVNode()
   }
   // warn against non-primitive key
   if (process.env.NODE_ENV !== 'production' &&
     isDef(data) && isDef(data.key) && !isPrimitive(data.key)
   ) {
+    // 如果data的key存在且key的值不是值类型。提出警告。
     if (!__WEEX__ || !('@binding' in data.key)) {
       warn(
+        // 避免使用非值类型的值作为key。用string或者number类型代替。
         'Avoid using non-primitive value as key, ' +
         'use string/number value instead.',
         context
@@ -87,8 +97,11 @@ export function _createElement (
   if (Array.isArray(children) &&
     typeof children[0] === 'function'
   ) {
+    // 如果children是数组，且数组第一项是一个函数。
     data = data || {}
+    // 给data的scopedSlots.default赋值，值是这个函数。
     data.scopedSlots = { default: children[0] }
+    // 将数组清空。
     children.length = 0
   }
   if (normalizationType === ALWAYS_NORMALIZE) {

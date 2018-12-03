@@ -110,6 +110,7 @@ export const createEmptyVNode = (text: string = '') => {
   return node
 }
 
+// 传入一个string或者number参数，返回一个文本节点。
 export function createTextVNode (val: string | number) {
   return new VNode(undefined, undefined, undefined, String(val))
 }
@@ -118,6 +119,7 @@ export function createTextVNode (val: string | number) {
 // used for static nodes and slot nodes because they may be reused across
 // multiple renders, cloning them avoids errors when DOM manipulations rely
 // on their elm reference.
+// 优化浅拷贝。在静态节点和slot节点中使用，因为它们可能在不同的renders里面被重复使用，将它们复制以避免在dom依赖于它们的ele参考时操作发生错误。
 export function cloneVNode (vnode: VNode): VNode {
   const cloned = new VNode(
     vnode.tag,

@@ -4,6 +4,7 @@ import { extend, warn, isObject } from 'core/util/index'
 
 /**
  * Runtime helper for rendering <slot>
+ * 运行时助手，为了渲染<slot>。
  */
 export function renderSlot (
   name: string,

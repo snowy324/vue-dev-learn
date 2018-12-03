@@ -5,19 +5,28 @@ import { isFalse, isTrue, isDef, isUndef, isPrimitive } from 'shared/util'
 
 // The template compiler attempts to minimize the need for normalization by
 // statically analyzing the template at compile time.
+// 模板编译器尝试最小化规范化静态分析模板在编译时的需要。
 //
 // For plain HTML markup, normalization can be completely skipped because the
 // generated render function is guaranteed to return Array<VNode>. There are
 // two cases where extra normalization is needed:
+// 对于纯粹的HTML标记，规范会可以完全被跳过，因为创建的渲染函数保证返回Array<VNode>。
+// 在两种情形下，额外的规范化是需要的。
 
 // 1. When the children contains components - because a functional component
 // may return an Array instead of a single root. In this case, just a simple
 // normalization is needed - if any child is an Array, we flatten the whole
 // thing with Array.prototype.concat. It is guaranteed to be only 1-level deep
 // because functional components already normalize their own children.
+// 1，当children包含组件时。因为一个功能组件可能不返回单个root而是返回一个数组。
+// 在这种情形下，一个简单的规范化是需要的。如果一个child是一个数组，我们用Array.prototypr.concat将整个child扁平化。
+// 它保证一层的深度因为功能组件已经将他的子集规范化。
 export function simpleNormalizeChildren (children: any) {
   for (let i = 0; i < children.length; i++) {
     if (Array.isArray(children[i])) {
+      // 如果children里的某项是数组，将children里的每一项都concat进一个空数组里。
+      // 这里判断，只要有一项是数组，就直接执行这行代码。然后return。
+      // concat里的参数，如果不是数组，直接合并，如果是数组，就将数组里的每一项全部合并。
       return Array.prototype.concat.apply([], children)
     }
   }
@@ -28,7 +37,11 @@ export function simpleNormalizeChildren (children: any) {
 // e.g. <template>, <slot>, v-for, or when the children is provided by user
 // with hand-written render functions / JSX. In such cases a full normalization
 // is needed to cater to all possible types of children values.
+// 当children包含经常创建嵌套数组的结构，例如template,slot,v-for,或者children是用户手写的render函数或者JSX。
+// 在这种情形下，为了迎合所有可能的children类型，一个完整的规范化是必须的。
 export function normalizeChildren (children: any): ?Array<VNode> {
+  // 如果children是值类型（string,number,boolean,symbol）则直接返回一个children的文本VNode。
+  // 如果不是，则判断chilren是否是数组，如果是，则返回normalizeArrayChildren函数的执行结果。如果不是，则返回undefined。
   return isPrimitive(children)
     ? [createTextVNode(children)]
     : Array.isArray(children)
@@ -45,6 +58,7 @@ function normalizeArrayChildren (children: any, nestedIndex?: string): Array<VNo
   let i, c, lastIndex, last
   for (i = 0; i < children.length; i++) {
     c = children[i]
+    // 如果c是undefined或者null或者是boolean类型。直接跳过。
     if (isUndef(c) || typeof c === 'boolean') continue
     lastIndex = res.length - 1
     last = res[lastIndex]
@@ -87,3 +101,4 @@ function normalizeArrayChildren (children: any, nestedIndex?: string): Array<VNo
   }
   return res
 }
+
