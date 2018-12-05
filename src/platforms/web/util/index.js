@@ -12,11 +12,13 @@ export * from './element'
  */
 export function query (el: string | Element): Element {
   if (typeof el === 'string') {
+    // 如果el的类型是string。获取el对应的element。
     const selected = document.querySelector(el)
     if (!selected) {
       process.env.NODE_ENV !== 'production' && warn(
         'Cannot find element: ' + el
       )
+      // 如果没有获取到element。发出警告。并创建一个新的div。
       return document.createElement('div')
     }
     return selected

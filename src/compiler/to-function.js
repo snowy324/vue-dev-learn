@@ -23,6 +23,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
   const cache = Object.create(null)
 
   // 返回一个函数。
+  // 传入三个参数，template模板字符串，option，vm实例。
   return function compileToFunctions (
     template: string,
     options?: CompilerOptions,

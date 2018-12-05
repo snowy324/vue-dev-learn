@@ -70,6 +70,7 @@ export function createCompilerCreator (baseCompile: Function): Function {
 
     return {
       compile,
+      // createCompileToFunctionFn的执行结果，也是返回一个函数。
       compileToFunctions: createCompileToFunctionFn(compile)
     }
   }
