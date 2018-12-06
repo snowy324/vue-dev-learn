@@ -142,6 +142,8 @@ export function getBindingAttr (
 // doesn't get processed by processAttrs.
 // By default it does NOT remove it from the map (attrsMap) because the map is
 // needed during codegen.
+// 提醒：这个仅仅在属性列表attrsList移除属性所以它不会在处理属性processAttrs处理。
+// 默认它不会将其在attrsMap中移除因为map会在编码中用到。
 export function getAndRemoveAttr (
   el: ASTElement,
   name: string,
