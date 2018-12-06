@@ -64,7 +64,7 @@ export function createASTElement (
 export function parse (
   template: string,
   options: CompilerOptions
-): ASTElement | void {
+): ASTElement | undefined {
   warn = options.warn || baseWarn
 
   platformIsPreTag = options.isPreTag || no
@@ -105,7 +105,7 @@ export function parse (
       postTransforms[i](element, options)
     }
   }
-
+  // 在这行下面插入parseHTML。
   parseHTML(template, {
     warn,
     expectHTML: options.expectHTML,

@@ -13,6 +13,8 @@ import { makeMap, no } from 'shared/util'
 import { isNonPhrasingTag } from 'web/compiler/util'
 
 // Regular Expressions for parsing tags and attributes
+// 解析标签和属性表达式。
+// String.prototype.match方法，非全局匹配时，数组第一项是匹配的字符串，后面几个是捕获组，有几个捕获组就有几项。之后是groups( 暂时不明白是什么),index,input。
 const attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
 // could use https://www.w3.org/TR/1999/REC-xml-names-19990114/#NT-QName
 // but for Vue templates we can enforce a simple charset
@@ -62,38 +64,54 @@ export function parseHTML (html, options) {
   const canBeLeftOpenTag = options.canBeLeftOpenTag || no
   let index = 0
   let last, lastTag
+  // 当html没有被解析完成时，解析会一直进行。
   while (html) {
     last = html
     // Make sure we're not in a plaintext content element like script/style
+    // 确保我们不是在一个纯文本内容的元素里。
     if (!lastTag || !isPlainTextElement(lastTag)) {
       let textEnd = html.indexOf('<')
       if (textEnd === 0) {
         // Comment:
+        // comment是判断注释开头的正则。
         if (comment.test(html)) {
+          // 判断注释的结尾。
           const commentEnd = html.indexOf('-->')
 
           if (commentEnd >= 0) {
+            // 如果找到了注释结尾。
             if (options.shouldKeepComment) {
+              // 如果options.shouldKeepComment为true。
+              // comment传入的一个方法。向闭包currentParent的children数组中push一个对象，表示注释。
+              // String.prototype.substring方法，截取两个索引之间的字符串。左闭右开，同时不会改变原字符串。
               options.comment(html.substring(4, commentEnd))
             }
+            // advence是一个方法，将html截取，从传入参数的位置截取到最后。
+            // 这里就是从commentEnd的位置加3（-->)的位置截取。生成新的html。
             advance(commentEnd + 3)
+            // 如果走到了这里，继续执行循环。下面的代码不会执行。
             continue
           }
         }
 
         // http://en.wikipedia.org/wiki/Conditional_comment#Downlevel-revealed_conditional_comment
+        // 特殊注释，以<![开头，]>结束的注释。
         if (conditionalComment.test(html)) {
+          // 找到特殊注释的结尾位置。
           const conditionalEnd = html.indexOf(']>')
 
           if (conditionalEnd >= 0) {
+            // 如果找到了特殊注释的结尾，截取特殊注释之后的html。
             advance(conditionalEnd + 2)
             continue
           }
         }
 
         // Doctype:
+        // doctype匹配<!DOCTYPE XXXXXX>开头。
         const doctypeMatch = html.match(doctype)
         if (doctypeMatch) {
+          // 如果匹配到了doctype开头。截取
           advance(doctypeMatch[0].length)
           continue
         }
