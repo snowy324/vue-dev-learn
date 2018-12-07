@@ -111,7 +111,8 @@ export function parseHTML (html, options) {
         // doctype匹配<!DOCTYPE XXXXXX>开头。
         const doctypeMatch = html.match(doctype)
         if (doctypeMatch) {
-          // 如果匹配到了doctype开头。截取
+          // 如果匹配到了doctype开头。截取doctypeMatch[0].length之后的字符串。
+          // doctypeMatch[0]也就是match结果的第一项，即匹配到的字符串，在这里就是<!DCOTYPE xxx>。
           advance(doctypeMatch[0].length)
           continue
         }
