@@ -151,7 +151,9 @@ export function parseHTML (html, options) {
           // 缓存当前的index。
           const curIndex = index
           // 根据endTagMatch匹配字符串的长度截取html。
+          // endTagMatch[0]是匹配字符串。
           advance(endTagMatch[0].length)
+          // endTagMatch[1]是结束的标签名。
           parseEndTag(endTagMatch[1], curIndex, index)
           continue
         }
@@ -164,6 +166,7 @@ export function parseHTML (html, options) {
           // 调用handleStartTag处理startTagMatch，即match对象。
           handleStartTag(startTagMatch)
           if (shouldIgnoreFirstNewline(lastTag, html)) {
+            // 判断pre和textarea的换行特殊情况进行处理。
             advance(1)
           }
           continue
@@ -172,32 +175,48 @@ export function parseHTML (html, options) {
 
       let text, rest, next
       if (textEnd >= 0) {
+        // 如果textEnd大于等于0。
+        // 先截取<符号之后的html字符串。
         rest = html.slice(textEnd)
         while (
+          // 不是结束标签。
           !endTag.test(rest) &&
+          // 不是开始标签。
           !startTagOpen.test(rest) &&
+          // 不是注释开头。
           !comment.test(rest) &&
+          // 不是条件注释开头。
           !conditionalComment.test(rest)
         ) {
           // < in plain text, be forgiving and treat it as text
+          // 这说明，<是在纯文本里，忽略这个并把它当做纯文本。
+          // 开始尝试查找下一个<，从索引1的地方开始查找（忽略到0索引位置的<)。
           next = rest.indexOf('<', 1)
+          // 如果没有找到，next等于-1，直接break。
           if (next < 0) break
+          // textEnd的位置等于下一个<的索引。
           textEnd += next
+          // 再次截取html。
           rest = html.slice(textEnd)
         }
+        // 最后text文本等于从html截取的文本内容。
         text = html.substring(0, textEnd)
+        // html继续截取。
         advance(textEnd)
       }
 
       if (textEnd < 0) {
+        // 如果没有找到<符号，则说明都是纯文本。
         text = html
         html = ''
       }
 
       if (options.chars && text) {
+        // 调用chars钩子处理文本。
         options.chars(text)
       }
     } else {
+      // 对于纯文本的处理。
       let endTagLength = 0
       const stackedTag = lastTag.toLowerCase()
       const reStackedTag = reCache[stackedTag] || (reCache[stackedTag] = new RegExp('([\\s\\S]*?)(</' + stackedTag + '[^>]*>)', 'i'))
@@ -357,17 +376,23 @@ export function parseHTML (html, options) {
     }
   }
 
+  // parseEndTag函数主要有三个作用：
+  // 检测非一元标签是否闭合。
+  // 处理stack栈中剩余未匹配结束标签的非一元开始标签。
+  // 解析</br>以及</p>标签。（浏览器遇到这两个标签的时候，会特殊处理。</br>会被解析成<br>，</p>会被解析成<p></p>。
   function parseEndTag (tagName, start, end) {
     let pos, lowerCasedTagName
     if (start == null) start = index
     if (end == null) end = index
 
     if (tagName) {
+      // 缓存小写的tagName。
       lowerCasedTagName = tagName.toLowerCase()
     }
 
     // Find the closest opened tag of the same type
     if (tagName) {
+      // 找到stack中与结束标签对应的开始标签，并找到索引。
       for (pos = stack.length - 1; pos >= 0; pos--) {
         if (stack[pos].lowerCasedTag === lowerCasedTagName) {
           break
@@ -375,6 +400,7 @@ export function parseHTML (html, options) {
       }
     } else {
       // If no tag name is provided, clean shop
+      // 如果没有找到对应的开始标签，pos赋值为0。
       pos = 0
     }
 
@@ -383,25 +409,36 @@ export function parseHTML (html, options) {
       for (let i = stack.length - 1; i >= pos; i--) {
         if (process.env.NODE_ENV !== 'production' &&
           (i > pos || !tagName) &&
+          // 传入了tagName时，pos理应匹配到stack栈顶的元素，如果pos并不是栈顶位置，stack.length，那说明stack中存在没有闭合的非一元标签。
+          // 如果options里传入了warn选项。
+          // 未传入tagName时，则说明stack应该是空栈（已经全部解析完毕），如果此时stack中依然存在元素，说明这些元素没有被闭合。
           options.warn
         ) {
+          // 调用options里的warn钩子。传入参数为一段警告字符串。
           options.warn(
             `tag <${stack[i].tag}> has no matching end tag.`
           )
         }
         if (options.end) {
+          // 调用options里传入的end钩子函数。
+          // 这个函数将未闭合的标签闭合。
           options.end(stack[i].tag, start, end)
         }
       }
 
       // Remove the open elements from the stack
+      // 将未闭合的非一元标签从stack栈中移除。
+      // 同时lastTag变成栈顶的元素标签。
       stack.length = pos
       lastTag = pos && stack[pos - 1].tag
     } else if (lowerCasedTagName === 'br') {
+      // 如果闭合元素没有找到（tagName并没有在stack栈中找到对应的开始标签，由于循环的原因，pos的最终值是-1)，并且闭合标签是br。
       if (options.start) {
+        // 利用start钩子函数，将</br>标签处理成<br>。
         options.start(tagName, [], true, start, end)
       }
     } else if (lowerCasedTagName === 'p') {
+      // 利用start钩子函数，将</p>标签处理成<p></p>。
       if (options.start) {
         options.start(tagName, [], false, start, end)
       }
