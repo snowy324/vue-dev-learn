@@ -19,19 +19,31 @@ import {
   pluckModuleFunction
 } from '../helpers'
 
+// onRE正则用来检测是否有@符号或者v-on:(属性中绑定事件)。
 export const onRE = /^@|^v-on:/
+// dirRE正则用来检测是否是指令，以v-或者@(v-on:)或者:(v-bind:)开头。
 export const dirRE = /^v-|^@|^:/
+// forAliasRE用来匹配v-for里的属性值，如item in list, item of list。
+// 有两个捕获组，第一个捕获组匹配item，第二个捕获到list。
 export const forAliasRE = /([^]*?)\s+(?:in|of)\s+([^]*)/
+// forIteratorRE用来匹配forAliasRE第一个捕获组的结果。
+// 如(item, index)，或者(value, key, index)。
 export const forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/
+// 匹配(开头)结尾的正则。用于将(item, index)去除括号成为item, index。
 const stripParensRE = /^\(|\)$/g
-
+// argRE正则用于匹配指令中的参数，如v-on:click.stop中的click.stop。
 const argRE = /:(.*)$/
+// bindRE正则用于匹配:或者vbind:开头的字符串。
 export const bindRE = /^:|^v-bind:/
+// modifierRE正则用于匹配指令中的修饰符。如v-on:click.stop中的stop。
 const modifierRE = /\.[^.]+/g
 
+// decodeHTMLCached用于解码字符实体。
+// 同时利用cached来提升性能。
 const decodeHTMLCached = cached(he.decode)
 
 // configurable state
+// 可配置的状态。
 export let warn: any
 let delimiters
 let transforms
@@ -43,11 +55,13 @@ let platformGetTagNamespace
 
 type Attr = { name: string; value: string };
 
+// 创建AST元素方法。
 export function createASTElement (
   tag: string,
   attrs: Array<Attr>,
   parent: ASTElement | void
 ): ASTElement {
+  // 返回一个对象，用来描述AST元素。
   return {
     type: 1,
     tag,
@@ -65,21 +79,31 @@ export function parse (
   template: string,
   options: CompilerOptions
 ): ASTElement | undefined {
+  // 如果options提供了warn方法则使用，如果没有，则使用baseWarn。
+  // baseWarn定义在../helper.js种，使用console.error输出错误信息。
   warn = options.warn || baseWarn
 
+  // 平台提供的判断是否是pre标签。如果没有提供，则使用一个始终返回false的函数。
   platformIsPreTag = options.isPreTag || no
+  // 平台提供的方法，检测一个属性在标签中是否要使用元素对象原生的 prop 进行绑定，如果没有则使用一个始终返回false的函数。
   platformMustUseProp = options.mustUseProp || no
+  // 平台提供的方法，获取元素(标签)的命名空间，如果没有则使用一个始终返回false的函数。
   platformGetTagNamespace = options.getTagNamespace || no
 
   transforms = pluckModuleFunction(options.modules, 'transformNode')
   preTransforms = pluckModuleFunction(options.modules, 'preTransformNode')
   postTransforms = pluckModuleFunction(options.modules, 'postTransformNode')
 
+  // 缓存options里的delimiters。
   delimiters = options.delimiters
 
+  // 定义stack。
   const stack = []
+  // 只要options.preserveWhitespace ！== false，preserveWhitespace就为true。
   const preserveWhitespace = options.preserveWhitespace !== false
+  // 定义root。最后返回的也是root。
   let root
+  // 定义currentParent，判断当前是在哪个父级元素里。
   let currentParent
   let inVPre = false
   let inPre = false
@@ -614,16 +638,20 @@ function parseModifiers (name: string): Object | void {
 }
 
 function makeAttrsMap (attrs: Array<Object>): Object {
+  // 定义一个map空对象。
   const map = {}
   for (let i = 0, l = attrs.length; i < l; i++) {
     if (
       process.env.NODE_ENV !== 'production' &&
       map[attrs[i].name] && !isIE && !isEdge
     ) {
+      // 提出警告，有重复的属性。
       warn('duplicate attribute: ' + attrs[i].name)
     }
+    // map保存了属性里的所有属性名和属性值。
     map[attrs[i].name] = attrs[i].value
   }
+  // 返回map对象。
   return map
 }
 

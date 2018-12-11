@@ -3,7 +3,9 @@
 import { emptyObject } from 'shared/util'
 import { parseFilters } from './parser/filter-parser'
 
+// 提供的基础警告方法。
 export function baseWarn (msg: string) {
+  // 输出error。
   console.error(`[Vue compiler]: ${msg}`)
 }
 
@@ -11,6 +13,8 @@ export function pluckModuleFunction<F: Function> (
   modules: ?Array<Object>,
   key: string
 ): Array<F> {
+  // 传入一个modules，过滤modules中的undefined并返回。
+  // Array.prototypr.filter可以用来过滤掉数组里的undefined或者null。
   return modules
     ? modules.map(m => m[key]).filter(_ => _)
     : []
