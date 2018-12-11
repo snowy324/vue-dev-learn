@@ -105,13 +105,17 @@ export function parse (
   let root
   // 定义currentParent，判断当前是在哪个父级元素里。
   let currentParent
+  // 判断当前解析标签是否在v-pre标签之内。
   let inVPre = false
+  // 判断当前解析标签是否在pre标签之内。
   let inPre = false
+  // 定义warned，用在warnOnce方法中。
   let warned = false
 
   function warnOnce (msg) {
     if (!warned) {
       warned = true
+      // 调用warn方法，发出警告。
       warn(msg)
     }
   }
@@ -141,29 +145,42 @@ export function parse (
     start (tag, attrs, unary) {
       // check namespace.
       // inherit parent ns if there is one
+      // 检查命名空间，如果父级有命名空间则继承父级的。
       const ns = (currentParent && currentParent.ns) || platformGetTagNamespace(tag)
 
       // handle IE svg bug
+      // 处理IE的svg bug。
       /* istanbul ignore if */
       if (isIE && ns === 'svg') {
+        // 调用guardIESVGBug方法处理这个bug。
+        // 在IE中，svg属性会渲染多余的属性。
         attrs = guardIESVGBug(attrs)
       }
 
+      // 创建一个AST元素。
       let element: ASTElement = createASTElement(tag, attrs, currentParent)
       if (ns) {
+        // 如果存在命名空间，则给element添加一个ns属性和相应的值。
+        // 只有svg和math标签或者他们的子节点，才会添加ns属性和值。
         element.ns = ns
       }
 
       if (isForbiddenTag(element) && !isServerRendering()) {
+        // 判断在非服务端渲染的环境里，element是否是被禁止的。
+        // script和style是被禁止的，不允许被放至在模板当中。
+        // 不过script里不是js，如type="text/x-template"时，不被禁止。
+        // 向element中添加forbidden属性，值为true。
         element.forbidden = true
         process.env.NODE_ENV !== 'production' && warn(
           'Templates should only be responsible for mapping the state to the ' +
           'UI. Avoid placing tags with side-effects in your templates, such as ' +
           `<${tag}>` + ', as they will not be parsed.'
+          // 模板应当只负责映射UI的状态，避免在你的模板里放置有副作用的标签，比如说${tag}，他们将不会被解析。
         )
       }
 
       // apply pre-transforms
+      // 
       for (let i = 0; i < preTransforms.length; i++) {
         element = preTransforms[i](element, options) || element
       }
@@ -189,17 +206,23 @@ export function parse (
       }
 
       function checkRootConstraints (el) {
+        // 检查根元素的限制条件。
         if (process.env.NODE_ENV !== 'production') {
+          // 非生产条件下，提出警告。
           if (el.tag === 'slot' || el.tag === 'template') {
+            // 不能使用slot或者template作为根元素。
             warnOnce(
               `Cannot use <${el.tag}> as component root element because it may ` +
               'contain multiple nodes.'
+              // 不能使用slot或者template作为根元素因为她们可能会包含多个节点。
             )
           }
           if (el.attrsMap.hasOwnProperty('v-for')) {
+            // 当根元素包含v-for属性时，发出警告。
             warnOnce(
               'Cannot use v-for on stateful component root element because ' +
               'it renders multiple elements.'
+              // 不能使用一个有v-for状态的组件根元素因为它渲染多个元素。
             )
           }
         }
@@ -207,40 +230,65 @@ export function parse (
 
       // tree management
       if (!root) {
+        // 如果根元素不存在，则说明当前element就是根元素，直接将element赋值给root。
         root = element
+        // 检查根元素的限制条件。
         checkRootConstraints(root)
       } else if (!stack.length) {
         // allow root elements with v-if, v-else-if and v-else
+        // 允许根元素使用v-if，v-else-if，v-else。
         if (root.if && (element.elseif || element.else)) {
+          // root.if属性存在说明根元素使用了v-if指令。
+          // element.elseif或者element.else说明当前element描述对象是使用了v-else-if或者v-else指令。
+          // if，elseif，else属性是通过processIf函数处理元素描述对象添加的。
+          // 检查element是否符合作为根元素的限制条件。
           checkRootConstraints(element)
+          // 将elseif对应的元素描述对象，添加到根元素root的ifConditions属性中。
           addIfCondition(root, {
             exp: element.elseif,
             block: element
           })
         } else if (process.env.NODE_ENV !== 'production') {
+          // 在非生产环境下。提出警告。
           warnOnce(
             `Component template should contain exactly one root element. ` +
             `If you are using v-if on multiple elements, ` +
             `use v-else-if to chain them instead.`
+            // 组件模板只能包含一个根元素。
+            // 如果你正在多个元素上使用v-if，可以用v-else-if将他们链接起来。
           )
         }
       }
       if (currentParent && !element.forbidden) {
+        // 如果currentParent存在，说明当前元素描述对象存在父级。且当前元素描述对象不是被禁止的。
         if (element.elseif || element.else) {
+          // 如果元素使用了v-else-if或者v-else指令。则使用processIfConditions函数处理。
           processIfConditions(element, currentParent)
         } else if (element.slotScope) { // scoped slot
+          // 如果element有slotScope属性。则将父级元素描述对象的plain属性变成false。
           currentParent.plain = false
+          // 获取当前元素描述对象的slotTarget属性，没有就赋值为default。
           const name = element.slotTarget || '"default"'
-          ;(currentParent.scopedSlots || (currentParent.scopedSlots = {}))[name] = element
+          // 对父级元素描述对象的scopedSlots属性进行处理。
+          // 如果没有，则初始化为一个空对象，同时将该对象的name属性指向当前元素描述对象。
+          // 所以slotScope其实也不是将元素放置在父级元素的children，而是放置是scopedSlot属性中。
+          (currentParent.scopedSlots || (currentParent.scopedSlots = {}))[name] = element
         } else {
+          // 将当前元素描述对象push进入currentParent父级元素描述对象的children数组中。
           currentParent.children.push(element)
+          // 同时把当前元素描述对象的parent属性指向父级元素描述对象。
+          // 这样就建立了元素间父子包含的关系。
           element.parent = currentParent
         }
       }
       if (!unary) {
+        // 如果当前描述对象为非一元标签。
+        // 将element赋值给currentParent。
         currentParent = element
+        // 将element元素描述对象push进stack数组中。
         stack.push(element)
       } else {
+        // 如果是一元标签，调用closeElement函数。
         closeElement(element)
       }
     },
@@ -430,41 +478,58 @@ function processIf (el) {
 }
 
 function processIfConditions (el, parent) {
+  // 找到当前元素的父级元素描述对象的前一个子元素。
   const prev = findPrevElement(parent.children)
   if (prev && prev.if) {
+    // 找到了前一个子元素，并且有if属性。
+    // 调用addIfConditions方法。
     addIfCondition(prev, {
       exp: el.elseif,
       block: el
     })
   } else if (process.env.NODE_ENV !== 'production') {
+    // 非生产环境下提出警告。
     warn(
       `v-${el.elseif ? ('else-if="' + el.elseif + '"') : 'else'} ` +
       `used on element <${el.tag}> without corresponding v-if.`
+      // v-else-if或者v-else在元素上使用，但是没有对应的v-if。
     )
   }
 }
 
 function findPrevElement (children: Array<any>): ASTElement | void {
+  // 找到children数组里的最后一个ASTElement元素描述对象。
   let i = children.length
   while (i--) {
     if (children[i].type === 1) {
+      // type全等于1，说明是ASTElement元素描述对象。
+      // 返回这个元素描述对象。
       return children[i]
     } else {
       if (process.env.NODE_ENV !== 'production' && children[i].text !== ' ') {
+        // 非生产环境下，且元素描述对象的text不是空。提出警告。
         warn(
           `text "${children[i].text.trim()}" between v-if and v-else(-if) ` +
           `will be ignored.`
+          // 在v-if和v-else(-if)间的文本，将会被忽略。
         )
       }
+      // 将children顶部的元素pop出去。
       children.pop()
     }
   }
 }
 
 export function addIfCondition (el: ASTElement, condition: ASTIfCondition) {
+  // 增加ifCondition方法。用于处理v-if指令。
   if (!el.ifConditions) {
+    // 判断元素描述对象的ifConditions是否存在，如果不存在就初始化为一个空数组。
     el.ifConditions = []
   }
+  // 最后将condition对象push进元素描述对象的ifConditions数组。
+  // ASTIfCondition类型是一个对象，包含两个属性，exp，block。
+  // exp指的是v-else-if指令的属性值，或者v-else指令的属性值（undefined)。
+  // block指的是v-else-if或者v-else指令对应的元素描述对象。
   el.ifConditions.push(condition)
 }
 
@@ -662,8 +727,10 @@ function isTextTag (el): boolean {
 
 function isForbiddenTag (el): boolean {
   return (
+    // style标签是被完全禁止的。
     el.tag === 'style' ||
     (el.tag === 'script' && (
+      // script标签，没有指定type，或者指定type为text/javascript的也是被禁止的。
       !el.attrsMap.type ||
       el.attrsMap.type === 'text/javascript'
     ))
