@@ -155,8 +155,11 @@ export function getAndRemoveAttr (
 ): ?string {
   let val
   if ((val = el.attrsMap[name]) != null) {
+    // 先获取元素描述对象中该属性的值，如果这个值存在。
+    // 缓存el.attrsList。
     const list = el.attrsList
     for (let i = 0, l = list.length; i < l; i++) {
+      // 找到el.attrsList数组中name属性的项。并将其删除。
       if (list[i].name === name) {
         list.splice(i, 1)
         break
@@ -164,7 +167,9 @@ export function getAndRemoveAttr (
     }
   }
   if (removeFromMap) {
+    // 如果传入了removeFromMap，则将el.attrsMap中的name属性给删除。
     delete el.attrsMap[name]
   }
+  // 返回name属性对应的属性值，如果没有就返回undefined。
   return val
 }

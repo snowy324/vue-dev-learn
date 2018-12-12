@@ -126,6 +126,8 @@ export function parse (
       inVPre = false
     }
     if (platformIsPreTag(element.tag)) {
+      // platformIsPreTag方法等于options.isPreTag方法，定义于web/util/element.js中。用于判断标签是否是pre。
+      // 如果是，则将inPre标识变成true。说明当前环境是在pre标签下。
       inPre = false
     }
     // apply post-transforms
@@ -186,22 +188,38 @@ export function parse (
       }
 
       if (!inVPre) {
+        // 当前不是在v-pre中。
+        // processPre函数，判断元素描述对象中v-pre属性，如果存在，会给element.pre赋值为true。
         processPre(element)
         if (element.pre) {
+          // 如果element.pre为true。
+          // 将inVPre赋值为true。说明当前元素使用了v-pre指令。同时也会影响到它的子元素。
+          // 后续的解析，都是在v-pre环境下。
           inVPre = true
         }
       }
       if (platformIsPreTag(element.tag)) {
+        // platformIsPreTag方法等于options.isPreTag方法，定义于web/util/element.js中。用于判断标签是否是pre。
+        // 如果是，则将inPre标识变成true。说明当前环境是在pre标签下。
         inPre = true
       }
       if (inVPre) {
+        // 如果在v-pre区块里，调用processRawAttrs函数。
+        // 该函数将元素描述对象的attrsList数组的属性值，全部转换成纯粹的字符串，并赋值给el.attrs。
+        // 如果是v-pre的子元素，且没有任何属性值，就将它的plain属性赋值为true。
         processRawAttrs(element)
       } else if (!element.processed) {
+        // element.processed标识是表示这个元素是否已经被解析。
         // structural directives
+        // 解构化的指令。
+        // 解析v-for指令。
         processFor(element)
+        // 解析v-if指令。
         processIf(element)
+        // 解析v-once指令。
         processOnce(element)
         // element-scope stuff
+        // 处理元素，processElement方法里调用了processKey，processRef，processSlot，processComponent方法。
         processElement(element, options)
       }
 
@@ -295,10 +313,10 @@ export function parse (
 
     end () {
       // remove trailing whitespace
-      const element = stack[stack.length - 1]
-      const lastNode = element.children[element.children.length - 1]
+      constNode = element.children[element.children.length - 1]
       if (lastNode && lastNode.type === 3 && lastNode.text === ' ' && !inPre) {
-        element.children.pop()
+        element.children.pop() element = stack[stack.length - 1]
+      const last
       }
       // pop stack
       stack.length -= 1
@@ -364,22 +382,33 @@ export function parse (
 
 function processPre (el) {
   if (getAndRemoveAttr(el, 'v-pre') != null) {
+    // 如果获取元素描述对象中的v-pre属性值不等于null。
+    // v-pre指令本身就没有属性值，这时会被统一处理为''。
+    // '' != null结果是true。
+    // 将元素的pre属性赋值为true。
     el.pre = true
   }
 }
 
 function processRawAttrs (el) {
+  // 缓存元素描述对象attrsList数组的长度。
   const l = el.attrsList.length
+
   if (l) {
+    // 如果el有属性。
     const attrs = el.attrs = new Array(l)
     for (let i = 0; i < l; i++) {
+      // 将el.attrsList中的每一项的属性值都转换成纯string赋值给el.attrs。
       attrs[i] = {
         name: el.attrsList[i].name,
+        // JSON.stringify保证了属性值始终被当作string去处理。
         value: JSON.stringify(el.attrsList[i].value)
       }
     }
   } else if (!el.pre) {
     // non root node in pre blocks with no attributes
+    // 在pre区块的非根节点，且没有任何属性。
+    // 给el添加plain属性，赋值为true。
     el.plain = true
   }
 }
@@ -401,11 +430,15 @@ export function processElement (element: ASTElement, options: CompilerOptions) {
 }
 
 function processKey (el) {
+  // 获取元素描述对象中key的属性值。
   const exp = getBindingAttr(el, 'key')
   if (exp) {
     if (process.env.NODE_ENV !== 'production' && el.tag === 'template') {
+      // 非生产环境下，当元素是类型是template时，提出警告。
       warn(`<template> cannot be keyed. Place the key on real elements instead.`)
+      // 模板不能加key属性，将key用在真实的元素上。
     }
+    // 将exp赋值给el.key。
     el.key = exp
   }
 }
@@ -421,10 +454,15 @@ function processRef (el) {
 export function processFor (el: ASTElement) {
   let exp
   if ((exp = getAndRemoveAttr(el, 'v-for'))) {
+    // 获取元素描述对象的v-for属性值。如果存在。
+    // 获取parseFor函数的处理结果。
     const res = parseFor(exp)
     if (res) {
+      // 如果结果存在，执行extend函数。
+      // extend方法定义在shared/util.js中。将res中的所有属性和属性值，都赋值给el。
       extend(el, res)
     } else if (process.env.NODE_ENV !== 'production') {
+      // 非生产环境下，提出警告。非法的v-for表达式。
       warn(
         `Invalid v-for expression: ${exp}`
       )
@@ -440,38 +478,72 @@ type ForParseResult = {
 };
 
 export function parseFor (exp: string): ?ForParseResult {
+  // 解析v-for。
+  // 定义inMatch保存forAliasRE匹配的正则结果。
+  // inMatch是一个数组，第一项保存匹配的字符串，第二项和第三项是捕获组。
+  // 
   const inMatch = exp.match(forAliasRE)
+  // 如果匹配失败，直接return。
   if (!inMatch) return
   const res = {}
+  // inMatch[2]就是被循环的目标对象(字符串)。如v-for="(item, index) in object"中的object。
   res.for = inMatch[2].trim()
+  // inMatch[1]是循环字符串中的元素和索引部分。如v-for=" (item, index) in object"中的" (item, index)"。
+  // 可能会包含空格，所以使用String.prototype.trim()去除首位的空格。
+  // 然后使用stripParensRE，将左右括号用""替换。
+  // alias就成了"item, index"
   const alias = inMatch[1].trim().replace(stripParensRE, '')
+  // forIteratorRE匹配alias中的索引或者属性值。
+  // 如alias是"item"时，iteratorMatch是null。
+  // 如alias是"item, index"时，iteratorMatch是[', index', 'index']。
+  // 如alias是"item, key, index"时，iteratorMatch是[', key, index', 'key', 'index']。
   const iteratorMatch = alias.match(forIteratorRE)
+  // 如果iteratorMatch不为null。
   if (iteratorMatch) {
+    // 将alias中的索引和属性值部分替换成""，赋值给res.alias。
     res.alias = alias.replace(forIteratorRE, '')
+    // iteratorMatch[1]是iteratorMatch中的捕获组。
+    // 赋值给res.iterator1。
     res.iterator1 = iteratorMatch[1].trim()
     if (iteratorMatch[2]) {
+      // 如果iteratorMatch[2]存在，则将其赋值给res.iterator2。
       res.iterator2 = iteratorMatch[2].trim()
     }
   } else {
+    // 如果没有，直接赋值给res.alias。
     res.alias = alias
   }
+  // 最后返回res。
+  // res最多可能拥有四个属性。
+  // for属性，值是被循环的对象变量名。如object。
+  // alias属性，是循环的元素名，如item。
+  // 可能有iterator1，是第一个迭代器，如key。
+  // 可能有iterator2，是第二个迭代器，如index。
   return res
 }
 
 function processIf (el) {
+  // 获取元素描述对象中v-if的属性值。
   const exp = getAndRemoveAttr(el, 'v-if')
   if (exp) {
+    // 如果存在v-if的属性值。
+    // 将属性值赋值给el.if。
     el.if = exp
+    // 调用addIfCondition方法。
     addIfCondition(el, {
       exp: exp,
       block: el
     })
   } else {
     if (getAndRemoveAttr(el, 'v-else') != null) {
+      // 元素描述对象中v-else的属性值。
+      // 如果有，就将el.else赋值为true。
       el.else = true
     }
     const elseif = getAndRemoveAttr(el, 'v-else-if')
     if (elseif) {
+      // 元素描述对象中v-else-if的属性值。
+      // 如果有，就将el.elseif赋值为true。
       el.elseif = elseif
     }
   }
@@ -534,8 +606,10 @@ export function addIfCondition (el: ASTElement, condition: ASTIfCondition) {
 }
 
 function processOnce (el) {
+  // 获取元素描述对象中的v-once的属性值。
   const once = getAndRemoveAttr(el, 'v-once')
   if (once != null) {
+    // 如果这个值存在，则将el.once赋值为true。
     el.once = true
   }
 }
