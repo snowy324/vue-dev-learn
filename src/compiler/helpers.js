@@ -56,6 +56,7 @@ export function addHandler (
   important?: boolean,
   warn?: Function
 ) {
+  // 获取修饰符。没有就为一个空对象。
   modifiers = modifiers || emptyObject
   // warn prevent and passive modifier
   /* istanbul ignore if */
@@ -63,10 +64,12 @@ export function addHandler (
     process.env.NODE_ENV !== 'production' && warn &&
     modifiers.prevent && modifiers.passive
   ) {
+    // 非生产环境下，如果passive和prevent同时使用了，提出警告。
     warn(
       'passive and prevent can\'t be used together. ' +
       'Passive handler can\'t prevent default event.'
     )
+    // passive和prevent不能同时使用，passive处理不能阻止默认事件。
   }
 
   // check capture modifier

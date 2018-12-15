@@ -182,7 +182,6 @@ export function parse (
       }
 
       // apply pre-transforms
-      // 
       for (let i = 0; i < preTransforms.length; i++) {
         element = preTransforms[i](element, options) || element
       }
@@ -211,7 +210,7 @@ export function parse (
       } else if (!element.processed) {
         // element.processed标识是表示这个元素是否已经被解析。
         // structural directives
-        // 解构化的指令。
+        // 结构化的指令。
         // 解析v-for指令。
         processFor(element)
         // 解析v-if指令。
@@ -418,6 +417,8 @@ export function processElement (element: ASTElement, options: CompilerOptions) {
 
   // determine whether this is a plain element after
   // removing structural attributes
+  // 在移除了结构化属性之后，决定这是不是一个纯粹的元素。
+  // 当element没有key属性，且只使用了结构化的指令（v-if，v-else-if，v-else，v-once）。
   element.plain = !element.key && !element.attrsList.length
 
   processRef(element)
@@ -444,9 +445,12 @@ function processKey (el) {
 }
 
 function processRef (el) {
+  // 获取ref的属性值。
   const ref = getBindingAttr(el, 'ref')
   if (ref) {
+    // 将ref赋值给el.ref。
     el.ref = ref
+    // refInFor属性标识该元素是不是在v-for环境里。
     el.refInFor = checkInFor(el)
   }
 }
@@ -616,20 +620,27 @@ function processOnce (el) {
 
 function processSlot (el) {
   if (el.tag === 'slot') {
+    // 如果元素标签是slot插槽标签。
+    // 获取name的属性值，赋值给el.slotName。
     el.slotName = getBindingAttr(el, 'name')
     if (process.env.NODE_ENV !== 'production' && el.key) {
+      // 非生产环境下，如果slot组件还有key属性，提出警告。
       warn(
         `\`key\` does not work on <slot> because slots are abstract outlets ` +
         `and can possibly expand into multiple elements. ` +
         `Use the key on a wrapping element instead.`
       )
+      // key在slot组件里不起作用，因为slots是抽象组件，可能被扩充成多个元素，把key用在包裹的元素上。
     }
   } else {
     let slotScope
     if (el.tag === 'template') {
+      // 如果在template元素里。
+      // 获取scope的属性值。赋值给slotScope。用来向下兼容。
       slotScope = getAndRemoveAttr(el, 'scope')
       /* istanbul ignore if */
       if (process.env.NODE_ENV !== 'production' && slotScope) {
+        // 非生产环境下，scope属性值存在时，提出警告。
         warn(
           `the "scope" attribute for scoped slots have been deprecated and ` +
           `replaced by "slot-scope" since 2.5. The new "slot-scope" attribute ` +
@@ -637,26 +648,39 @@ function processSlot (el) {
           `denote scoped slots.`,
           true
         )
+        // 2.5版本之后，作用域插槽的scope属性已经废弃，并使用slot-scope属性代替。
+        // slot-scope属性不仅仅可以在template上使用，也可以在纯粹的元素上使用，来表示作用域插槽。
       }
+      // 获取slotScope的属性值。
       el.slotScope = slotScope || getAndRemoveAttr(el, 'slot-scope')
     } else if ((slotScope = getAndRemoveAttr(el, 'slot-scope'))) {
+      // el不是template，获取slot-scope属性值，如果属性值存在，则执行这里的代码。
       /* istanbul ignore if */
       if (process.env.NODE_ENV !== 'production' && el.attrsMap['v-for']) {
+        // 非生产环境下，元素使用了v-for指令，发出警告。
         warn(
           `Ambiguous combined usage of slot-scope and v-for on <${el.tag}> ` +
           `(v-for takes higher priority). Use a wrapper <template> for the ` +
           `scoped slot to make it clearer.`,
           true
         )
+        // 模糊地结合使用作用域插槽和v-for指令，v-for拥有更高的优先级。
+        // 用一个template将作用域插槽包裹起来，让它更清晰。
       }
+      // 将slotScope赋值给el.slotScope。
       el.slotScope = slotScope
     }
+    // 获取slot的属性值。
     const slotTarget = getBindingAttr(el, 'slot')
     if (slotTarget) {
+      // 如果slotTarget是空字符串，则将default赋值给el.slotTarget，否则将slot属性值赋值给el.slotTarget。
       el.slotTarget = slotTarget === '""' ? '"default"' : slotTarget
       // preserve slot as an attribute for native shadow DOM compat
       // only for non-scoped slots.
+      // 为原生影子dom兼容保留slot作为一个属性，只为非作用域插槽。
+      // 这是在web component里的内容。
       if (el.tag !== 'template' && !el.slotScope) {
+        // 将slot和对应的属性值添加到元素的属性中。
         addAttr(el, 'slot', slotTarget)
       }
     }
@@ -666,41 +690,66 @@ function processSlot (el) {
 function processComponent (el) {
   let binding
   if ((binding = getBindingAttr(el, 'is'))) {
+    // 获取is绑定的属性值。
+    // 将属性值赋值给el.component。
     el.component = binding
   }
   if (getAndRemoveAttr(el, 'inline-template') != null) {
+    // 如果使用了inline-template属性。
+    // 则将el.inlineTemplate赋值为true。
     el.inlineTemplate = true
   }
 }
 
 function processAttrs (el) {
+  // 定义list，引用el.attrsList。
   const list = el.attrsList
   let i, l, name, rawName, value, modifiers, isProp
   for (i = 0, l = list.length; i < l; i++) {
+    // 循环对list执行操作。
+    // 缓存name和rawName为属性名。
+    // 缓存value为属性值。
     name = rawName = list[i].name
     value = list[i].value
     if (dirRE.test(name)) {
+      // dirRE是检测是否以v-，@，:开头，如果是，则说明是指令。
       // mark element as dynamic
+      // 表示元素为动态的。
+      // 将el.hasBindings赋值为true。
       el.hasBindings = true
       // modifiers
+      // 获取修饰符对象。
       modifiers = parseModifiers(name)
       if (modifiers) {
+        // 如果有修饰符，将属性值中的修饰符部分替换成''。
         name = name.replace(modifierRE, '')
       }
       if (bindRE.test(name)) { // v-bind
+        // 如果属性使用了v-bind(v-bind || :)。
+        // 先将属性名中的v-bind或者:替换成''。
         name = name.replace(bindRE, '')
+        // 获取过滤器处理之后的value值。
         value = parseFilters(value)
+        // isProp表示是否是原生DOM的属性。如innerHTML。
+        // 在这里赋值为false。表示不是原生DOM的属性。
         isProp = false
         if (modifiers) {
+          // 在这里处理修饰符。v-bind提供了三个修饰符：prop，camel，sync。
           if (modifiers.prop) {
+            // prop修饰符，用于绑定原生DOM属性property。
+            // 将isProp改为true。
             isProp = true
+            // 将属性名变成驼峰命名。
             name = camelize(name)
+            // 如果属性名是innerHtml，则手动修改成innerHTML。
             if (name === 'innerHtml') name = 'innerHTML'
           }
           if (modifiers.camel) {
+            // camel修饰符，直接将属性名变成驼峰命名。
             name = camelize(name)
           }
           if (modifiers.sync) {
+            // sync修饰符。语法糖。
             addHandler(
               el,
               `update:${camelize(name)}`,
@@ -759,6 +808,9 @@ function processAttrs (el) {
 function checkInFor (el: ASTElement): boolean {
   let parent = el
   while (parent) {
+    // 循环判断元素的parent.for属性。
+    // 如果存在，就返回true。
+    // 如果一直遍历到了根节点，依旧没有，则最终返回false。
     if (parent.for !== undefined) {
       return true
     }
@@ -768,10 +820,14 @@ function checkInFor (el: ASTElement): boolean {
 }
 
 function parseModifiers (name: string): Object | void {
+  // 匹配指令中的修饰符。
   const match = name.match(modifierRE)
   if (match) {
+    // 定义修饰符存储对象。
     const ret = {}
+    // 将修饰符中的每一个值，之前的.去掉，作为ret对象的属性名，属性值为true。
     match.forEach(m => { ret[m.slice(1)] = true })
+    // 返回修饰符对象.
     return ret
   }
 }

@@ -21,7 +21,7 @@ export function parseFilters (exp: string): string {
   // lastFilterIndex标识字符的索引位置。
   let lastFilterIndex = 0
   // c表示当前字符对应的ASCII码，prev表示前一个字符对应的ASCII码。
-  // i表示当前字符的索引位置。expression表示函数返回值。
+  // i表示当前字符的索引位置。expression是表达式。
   // filters是一个数组，保存过滤器的函数。
   let c, prev, i, expression, filters
 
@@ -55,9 +55,14 @@ export function parseFilters (exp: string): string {
       // 满足上面条件才执行这里的语句。
       if (expression === undefined) {
         // first filter, end of expression
+        // 第一个过滤器。expression是undefined。
+        // lastFilterIndex赋值为管道符的下一个位置。
         lastFilterIndex = i + 1
+        // 截取管道符之前的表达式，赋值给expression。
         expression = exp.slice(0, i).trim()
       } else {
+        // 当遇到第二个或者更多的过滤器时，执行这里的代码。
+        // 截取上一个管道符的下一个位置，到当前索引位置中间的字符，去掉首位空格，就是过滤器的名称。
         pushFilter()
       }
     } else {
@@ -83,6 +88,7 @@ export function parseFilters (exp: string): string {
       }
       if (c === 0x2f) { // /
         // 当c为/时。
+        // 判断是否在正则环境下。
         let j = i - 1
         let p
         // find first non-whitespace prev char
@@ -91,6 +97,7 @@ export function parseFilters (exp: string): string {
           if (p !== ' ') break
         }
         if (!p || !validDivisionCharRE.test(p)) {
+          // 如果是在正则环境下，将inRegex赋值为true。
           inRegex = true
         }
       }
@@ -98,33 +105,46 @@ export function parseFilters (exp: string): string {
   }
 
   if (expression === undefined) {
+    // 如果expression不存在，说明for循环解析结束，并没有遇到想要的管道符。
     expression = exp.slice(0, i).trim()
   } else if (lastFilterIndex !== 0) {
+    // 如果expression存在，且lastFiterIndex不是0，则将最后一个过滤器push进filters数组中。
     pushFilter()
   }
 
   function pushFilter () {
+    // 如果filters不存在，则初始化它为一个空数组。
+    // 将过滤器截取，并存储到这个filters中。
+    // 最后将lastFilterIndex赋值。
     (filters || (filters = [])).push(exp.slice(lastFilterIndex, i).trim())
     lastFilterIndex = i + 1
   }
 
   if (filters) {
+    // 如果filters存在。
     for (i = 0; i < filters.length; i++) {
+      // 对表达式进行过滤器操作。
       expression = wrapFilter(expression, filters[i])
     }
   }
 
+  // 最终将表达式最终的结果返回。
   return expression
 }
 
 function wrapFilter (exp: string, filter: string): string {
+  // 判断filter里是否有(符号。
   const i = filter.indexOf('(')
   if (i < 0) {
     // _f: resolveFilter
+    // 如果没有，直接使用resolveFilter。
     return `_f("${filter}")(${exp})`
   } else {
+    // 如果有(，则获取过滤器的名字，赋值给name，获取参数，赋值给args。
     const name = filter.slice(0, i)
     const args = filter.slice(i + 1)
+    // 将参数也传递进入_f中。
     return `_f("${name}")(${exp}${args !== ')' ? ',' + args : args}`
   }
 }
+
