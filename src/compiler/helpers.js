@@ -129,14 +129,25 @@ export function getBindingAttr (
   name: string,
   getStatic?: boolean
 ): ?string {
+  // 获取使用:name或者，v-bind:name的指令的属性值。
   const dynamicValue =
     getAndRemoveAttr(el, ':' + name) ||
     getAndRemoveAttr(el, 'v-bind:' + name)
   if (dynamicValue != null) {
+    // dynamicValue指的是属性值，但在这里!=null判断却是判断属性是否存在。
+    // 因为如果属性存在但没有写属性值，或者等于''，都会被处理成''，而''!=null是成立的。
+    // 只有属性不存在时，dynamicValue才是undefined。undefined!=null是false。
+    // 调用parseFilters函数进行处理，也就是说，绑定属性，其实是可以使用过滤器的。
+    // parseFilters定义在parser/filter-parser.js中。用于解析过滤器，并返回处理后的值。
     return parseFilters(dynamicValue)
   } else if (getStatic !== false) {
+    // getStatic是函数的第三个参数，如果不传，则是undefined。
+    // undefined !== false 为true。所以只有显示传递getStatic为false时，这里才不执行。
+    // 获取静态属性name的属性值。
     const staticValue = getAndRemoveAttr(el, name)
     if (staticValue != null) {
+      // 将该值返回。
+      // 非绑定属性，使用JSON。stringify处理，保证返回的一定是一个string，而不是变量或者表达式。
       return JSON.stringify(staticValue)
     }
   }
