@@ -325,6 +325,7 @@ export function parse (
 
     chars (text: string) {
       if (!currentParent) {
+        // 当前节点的父节点不存在时，执行这里，提出警告。
         if (process.env.NODE_ENV !== 'production') {
           if (text === template) {
             warnOnce(
@@ -339,11 +340,14 @@ export function parse (
         return
       }
       // IE textarea placeholder bug
+      // IEtextarea的placeholder的bug。
       /* istanbul ignore if */
       if (isIE &&
         currentParent.tag === 'textarea' &&
         currentParent.attrsMap.placeholder === text
       ) {
+        // IE的textarea没有真实值时，获取这个textarea的innerHTML会获取它的placeholder。
+        // 所以当textarea的placeholder全等于文本的时候，判断这个文本其实是不存在的，是IE的bug。直接return。
         return
       }
       const children = currentParent.children
@@ -413,6 +417,7 @@ function processRawAttrs (el) {
 }
 
 export function processElement (element: ASTElement, options: CompilerOptions) {
+  // 处理元素中的key值。
   processKey(element)
 
   // determine whether this is a plain element after
@@ -421,12 +426,16 @@ export function processElement (element: ASTElement, options: CompilerOptions) {
   // 当element没有key属性，且只使用了结构化的指令（v-if，v-else-if，v-else，v-once）。
   element.plain = !element.key && !element.attrsList.length
 
+  // 处理元素中的ref引用。
   processRef(element)
+  // 处理元素中的slot。
   processSlot(element)
+  // 处理元素中的is值。
   processComponent(element)
   for (let i = 0; i < transforms.length; i++) {
     element = transforms[i](element, options) || element
   }
+  // 处理元素中未处理的指令，和自定义的属性。
   processAttrs(element)
 }
 
@@ -758,31 +767,48 @@ function processAttrs (el) {
           }
         }
         if (isProp || (
+          // isProp为真，说明是原生DOM的属性。
+          // el.component属性存储的是is的属性值。
           !el.component && platformMustUseProp(el.tag, el.attrsMap.type, name)
         )) {
+          // addProp定义在../helpers.js里。
+          // 作用是向el元素的props数组里添加一项prop。同时将el.plain赋值为false。
           addProp(el, name, value)
         } else {
+          // addAttr定义在../helpers.js里。
+          // 作用是向el元素的attrs数组里添加一项attr。同时将el.plain赋值为false。
           addAttr(el, name, value)
         }
       } else if (onRE.test(name)) { // v-on
+        // 使用了v-on指令。
+        // 获取v-on指令后的属性。
         name = name.replace(onRE, '')
         addHandler(el, name, value, modifiers, false, warn)
       } else { // normal directives
+        // 处理v-text，v-html，v-show，v-cloak，v-model以及自定义的指令。
+        // 先获取属性名，用正则将指令替换成''。
         name = name.replace(dirRE, '')
         // parse arg
+        // argRE用来匹配指令中的参数。
         const argMatch = name.match(argRE)
+        // 获取arg。
         const arg = argMatch && argMatch[1]
         if (arg) {
+          // 如果有参数，将参数移除，得到真正的指令名称。
           name = name.slice(0, -(arg.length + 1))
         }
+        // 调用addDirective方法。
         addDirective(el, name, rawName, value, arg, modifiers)
         if (process.env.NODE_ENV !== 'production' && name === 'model') {
+          // 非生产环境下，如果指令是model。
           checkForAliasModel(el, value)
         }
       }
     } else {
       // literal attribute
+      // 字面属性。也就是非指令属性。如id，width。
       if (process.env.NODE_ENV !== 'production') {
+        // 非生产环境下。
         const res = parseText(value, delimiters)
         if (res) {
           warn(
@@ -791,14 +817,19 @@ function processAttrs (el) {
             'Use v-bind or the colon shorthand instead. For example, ' +
             'instead of <div id="{{ val }}">, use <div :id="val">.'
           )
+          // 属性内部的插值语法已经被移除。
+          // 使用v-bind或者:来代替。
         }
       }
+      // 将属性和JSON.stringify处理过后的属性值通过addAttr存储到el.attrs中。
       addAttr(el, name, JSON.stringify(value))
       // #6887 firefox doesn't update muted state if set via attribute
       // even immediately after element creation
+      // 火狐不能使用setAttribute更新muted属性，即使是在元素一创建就立马执行。
       if (!el.component &&
           name === 'muted' &&
           platformMustUseProp(el.tag, el.attrsMap.type, name)) {
+        // 调用addProp向元素的原生属性中添加一项。
         addProp(el, name, 'true')
       }
     }
@@ -886,7 +917,9 @@ function guardIESVGBug (attrs) {
 function checkForAliasModel (el, value) {
   let _el = el
   while (_el) {
+    // 循环遍历el和el的父节点。
     if (_el.for && _el.alias === value) {
+      // 如果使用了v-for指令，同时alias(v-for的属性值前面部分)和v-model的属性值相等，提出警告。
       warn(
         `<${el.tag} v-model="${value}">: ` +
         `You are binding v-model directly to a v-for iteration alias. ` +
@@ -894,6 +927,9 @@ function checkForAliasModel (el, value) {
         `writing to the alias is like modifying a function local variable. ` +
         `Consider using an array of objects and use v-model on an object property instead.`
       )
+      // 你正在直接将v-model指令绑定到了v-for的迭代器别名。
+      // 这将不会修改v-for的院数组因为改写这个别名就想修改一个函数内的变量。
+      // 考虑替换使用一个对象的数组，用v-model绑定一个对象的属性。
     }
     _el = _el.parent
   }

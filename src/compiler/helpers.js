@@ -21,11 +21,15 @@ export function pluckModuleFunction<F: Function> (
 }
 
 export function addProp (el: ASTElement, name: string, value: string) {
+  // 向el的props数组中插入一项prop。
+  // 同时将el.plain赋值为false。
   (el.props || (el.props = [])).push({ name, value })
   el.plain = false
 }
 
 export function addAttr (el: ASTElement, name: string, value: any) {
+  // 向el的attrs数组中插入一项attr。
+  // 同时将el.plain赋值为false。
   (el.attrs || (el.attrs = [])).push({ name, value })
   el.plain = false
 }
@@ -44,7 +48,9 @@ export function addDirective (
   arg: ?string,
   modifiers: ?ASTModifiers
 ) {
+  // 向el.directives里添加指令项。
   (el.directives || (el.directives = [])).push({ name, rawName, value, arg, modifiers })
+  // 将el.plain赋值为false。
   el.plain = false
 }
 
@@ -74,56 +80,80 @@ export function addHandler (
 
   // check capture modifier
   if (modifiers.capture) {
+    // 先删除修饰符里的captrue。
     delete modifiers.capture
+    // 将事件名称前面添加一个!。表示为captured事件。
     name = '!' + name // mark the event as captured
   }
   if (modifiers.once) {
+    // 先删除修饰符里的once。
     delete modifiers.once
+    // 将事件名称前面添加一个~。表示为once事件。
     name = '~' + name // mark the event as once
   }
   /* istanbul ignore if */
   if (modifiers.passive) {
+    // 先删除修饰符里的passive。
     delete modifiers.passive
+    // 将事件名称前面添加一个&。表示为passive事件。
     name = '&' + name // mark the event as passive
   }
 
   // normalize click.right and click.middle since they don't actually fire
   // this is technically browser-specific, but at least for now browsers are
   // the only target envs that have right/middle clicks.
+  // 规范化右击和鼠标滚轮按下事件。
   if (name === 'click') {
     if (modifiers.right) {
+      // 如果属性为click，且修饰符里有right。
+      // 将属性名更改为contextmenu。
       name = 'contextmenu'
+      // 将修饰符里的right删除。
       delete modifiers.right
     } else if (modifiers.middle) {
+      // 如果修饰符里有middle。
+      // 则将属性名变成mouseup。
       name = 'mouseup'
     }
   }
 
+  // 定义events。
   let events
   if (modifiers.native) {
+    // 如果修饰符里有native。
+    // 删除修饰符里的native。
     delete modifiers.native
+    // event赋值为el.nativeEvents。
     events = el.nativeEvents || (el.nativeEvents = {})
   } else {
+    // 如果修饰符没有native，则events为el.events。
     events = el.events || (el.events = {})
   }
 
+  // 定义newHandler。将初始值赋给value属性。
   const newHandler: any = {
     value: value.trim()
   }
   if (modifiers !== emptyObject) {
+    // 如果修饰符存在，则将newHandler.modifiers引用指向modifiers。
     newHandler.modifiers = modifiers
   }
 
+  // 获取events.name，赋值给handlers。
   const handlers = events[name]
   /* istanbul ignore if */
   if (Array.isArray(handlers)) {
+    // 如果handler是一个数组，则判断important，如果为true，则将newHandler放置在handlers的开头，如果为false，则放置在结尾。
     important ? handlers.unshift(newHandler) : handlers.push(newHandler)
   } else if (handlers) {
+    // 如果handlers只有一项，那么根据important将newHandler放置在之前handlers的前面还是后面，生成一个数组。
     events[name] = important ? [newHandler, handlers] : [handlers, newHandler]
   } else {
+    // 如果handlers不存在，则初始化为newHandler。
     events[name] = newHandler
   }
 
+  // 将el.plain赋值为false。
   el.plain = false
 }
 

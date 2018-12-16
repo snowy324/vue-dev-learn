@@ -32,6 +32,7 @@ export function genComponentModel (
 
 /**
  * Cross-platform codegen helper for generating v-model value assignment code.
+ * 跨平台的、为了创建v-model值分配的代码助手。
  */
 export function genAssignmentCode (
   value: string,

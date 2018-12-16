@@ -8,9 +8,12 @@ import {
 } from 'compiler/helpers'
 
 function transformNode (el: ASTElement, options: CompilerOptions) {
+  // 获取warn函数。
   const warn = options.warn || baseWarn
+  // 获取非绑定属性class的属性值。
   const staticClass = getAndRemoveAttr(el, 'class')
   if (process.env.NODE_ENV !== 'production' && staticClass) {
+    // 非生产环境下，非绑定属性class使用插值语法，提出警告。
     const res = parseText(staticClass, options.delimiters)
     if (res) {
       warn(
@@ -22,10 +25,13 @@ function transformNode (el: ASTElement, options: CompilerOptions) {
     }
   }
   if (staticClass) {
+    // 如果存在非绑定属性的class值，使用JSON.stringify处理后直接赋值给el.staticClass。
     el.staticClass = JSON.stringify(staticClass)
   }
+  // 获取使用v-bind或者:的class属性值。
   const classBinding = getBindingAttr(el, 'class', false /* getStatic */)
   if (classBinding) {
+    // 如果存在，将该字符串赋值给el.classBinding。
     el.classBinding = classBinding
   }
 }

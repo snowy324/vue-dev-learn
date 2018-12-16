@@ -4,9 +4,12 @@ import { cached, extend, toObject } from 'shared/util'
 
 export const parseStyleText = cached(function (cssText) {
   const res = {}
+  // css项分隔符，用;分割。
   const listDelimiter = /;(?![^(]*\))/g
+  // 属性分割符，用:分割。
   const propertyDelimiter = /:(.+)/
   cssText.split(listDelimiter).forEach(function (item) {
+    // 对每一个css样式取值，将属性名和属性值统一赋值给res对象。
     if (item) {
       var tmp = item.split(propertyDelimiter)
       tmp.length > 1 && (res[tmp[0].trim()] = tmp[1].trim())
