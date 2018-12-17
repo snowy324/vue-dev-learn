@@ -5,9 +5,84 @@
     <title>Test of Vue source code</title>
 </head>
 <body>
-    <script src="../dist/vue.js"></script>
-    <script>
-        
-    </script>
+    <div id="app">
+        <div>
+            显示值：{{ message }}
+        </div>
+        <div>
+            <input type="text" v-model="message" label="更改值">
+        </div>
+        <div>
+            计算属性：{{ computedMsg }}
+        </div>
+        <div>
+            <label for="weather">天气</label>
+            <input type="text" v-model="weather" name="weather">
+        </div>
+        <div>
+            please give me some suggestions according to the weather today:
+        </div>
+        <div>
+            <span class="b">suggestions:</span> {{ suggestions }}
+        </div>
+    </div>
 </body>
+<script src="../dist/vue.js"></script>
+<script>
+    Vue.mixin({
+        data () {
+            return {
+                mixInInfo: "this is mixin info"
+            }
+        },
+        created () {
+            console.log("call hook " + " created " + "in mixin")
+        }
+    })
+    let vm = new Vue({
+        el: '#app',
+        data: {
+            message: 'hello',
+            weather: 'overcast',
+            suggestions: 'take care!',
+            insideObj: {
+                name: 'inside',
+                value: 'fuck'
+            },
+            directList: ['East', 'West', 'North', 'South']
+        },
+        beforeCreate () {
+            console.log("call hook " + " beforeCreate")
+        },
+        created () {
+            console.log("call hook " + " created")
+        },
+        beforeMount () {
+            console.log("call hook " + " beforeMount")
+        },
+        mounted () {
+            console.log("call hook " + " mounted")
+        },
+        computed: {
+            computedMsg () {
+                return "msg inside input is " + this.message + " and the weather is " + this.weather
+            }
+        },
+        watch: {
+            weather (newValue, oldValue) {
+                if(newValue === 'rainy') {
+                    this.suggestions = 'take umbrella please!'
+                } else if (newValue === "windy") {
+                    this.suggestions = "watch out!gale is coming!"
+                } else if (newValue === "snowy") {
+                    this.suggestions = "go out and have snowball fights!"
+                } else if (newValue === 'sunny') {
+                    this.suggestions = 'have a date with your girl friend!'
+                } else {
+                    this.suggestions = "no idea!"
+                }
+            }
+        }
+    })
+</script>
 </html>
