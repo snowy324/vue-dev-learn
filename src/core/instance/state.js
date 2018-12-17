@@ -46,8 +46,8 @@ export function proxy (target: Object, sourceKey: string, key: string) {
 }
 
 export function initState (vm: Component) {
-  // 初始化vm实例的watchers属性为一个空数组。
-  vm.watchers = []
+  // 初始化vm实例的_watchers属性为一个空数组。
+  vm._watchers = []
   // 缓存vm实例的$options。
   const opts = vm.$options
   // 如果$options里存在props则执行initProps。
