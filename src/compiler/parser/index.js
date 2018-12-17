@@ -78,7 +78,7 @@ export function createASTElement (
 export function parse (
   template: string,
   options: CompilerOptions
-): ASTElement | undefined {
+): (ASTElement | void) {
   // 如果options提供了warn方法则使用，如果没有，则使用baseWarn。
   // baseWarn定义在../helper.js种，使用console.error输出错误信息。
   warn = options.warn || baseWarn
@@ -135,7 +135,7 @@ export function parse (
       postTransforms[i](element, options)
     }
   }
-  // 在这行下面插入parseHTML。
+
   parseHTML(template, {
     warn,
     expectHTML: options.expectHTML,
@@ -289,7 +289,7 @@ export function parse (
           // 对父级元素描述对象的scopedSlots属性进行处理。
           // 如果没有，则初始化为一个空对象，同时将该对象的name属性指向当前元素描述对象。
           // 所以slotScope其实也不是将元素放置在父级元素的children，而是放置是scopedSlot属性中。
-          (currentParent.scopedSlots || (currentParent.scopedSlots = {}))[name] = element
+          ;(currentParent.scopedSlots || (currentParent.scopedSlots = {}))[name] = element
         } else {
           // 将当前元素描述对象push进入currentParent父级元素描述对象的children数组中。
           currentParent.children.push(element)
@@ -312,10 +312,10 @@ export function parse (
 
     end () {
       // remove trailing whitespace
-      constNode = element.children[element.children.length - 1]
+      const element = stack[stack.length - 1]
+      const lastNode = element.children[element.children.length - 1]
       if (lastNode && lastNode.type === 3 && lastNode.text === ' ' && !inPre) {
-        element.children.pop() element = stack[stack.length - 1]
-      const last
+        element.children.pop()
       }
       // pop stack
       stack.length -= 1
