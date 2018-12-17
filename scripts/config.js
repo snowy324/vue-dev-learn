@@ -178,6 +178,7 @@ function genConfig (name) {
   const config = {
     input: opts.entry,
     external: opts.external,
+    sourceMap: true,
     plugins: [
       // replace插件 变量替换，可以将动态设置的变量提取出来在配置文件中设置
       replace({
