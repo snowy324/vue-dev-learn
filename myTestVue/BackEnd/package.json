@@ -1,10 +1,12 @@
 {
   "name": "koa",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "dependencies": {
     "koa": "^2.6.2"
+  },
+  "bin": {
+    "runServer": "./app.js"
   },
   "devDependencies": {
     "koa-static": "^5.0.0"
@@ -14,5 +16,6 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "description": ""
 }

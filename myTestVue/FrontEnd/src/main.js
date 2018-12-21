@@ -1,4 +1,3 @@
-console.log(Vue)
 Vue.mixin({
     data () {
         return {
@@ -9,6 +8,9 @@ Vue.mixin({
         console.log("call hook " + " created " + "in mixin")
     }
 })
+
+
+import App from './App.vue'
 
 new Vue({
   render: h => h(App),
